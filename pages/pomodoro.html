@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Pomodoro — Locked In Factory</title>
+  <link rel="stylesheet" href="../css/global.css" />
+  <link rel="stylesheet" href="../css/pomodoro.css" />
+</head>
+<body>
+
+  <!-- ── Navbar ─────────────────────────────────────────── -->
+  <nav class="navbar">
+    <a class="navbar__brand" href="../index.html">Locked In Factory</a>
+    <ul class="navbar__links">
+      <li><a class="navbar__link" href="../index.html"><span class="navbar__link-icon">🏠</span> Dashboard</a></li>
+      <li><a class="navbar__link" href="./session.html"><span class="navbar__link-icon">📚</span> Study Session</a></li>
+      <li><a class="navbar__link" href="./pomodoro.html"><span class="navbar__link-icon">🍅</span> Pomodoro</a></li>
+      <li><a class="navbar__link" href="./calendar.html"><span class="navbar__link-icon">📅</span> Calendar</a></li>
+      <li><a class="navbar__link" href="./deadlines.html"><span class="navbar__link-icon">⚠️</span> Deadlines</a></li>
+      <li><a class="navbar__link" href="./flashcards.html"><span class="navbar__link-icon">🃏</span> Flashcards</a></li>
+    </ul>
+    <button class="navbar__toggle" id="nav-toggle" aria-label="Toggle navigation">☰</button>
+  </nav>
+
+  <main class="page-wrapper">
+
+    <header class="page-header pomo-page-header">
+      <div>
+        <h1 class="page-header__title">Pomodoro Timer</h1>
+        <p class="page-header__subtitle">Stay focused. Take breaks. Repeat.</p>
+      </div>
+    </header>
+
+    <div class="pomo-layout">
+
+      <!-- ── Timer Card ────────────────────────────────── -->
+      <div class="pomo-card">
+
+        <!-- Mode Tabs -->
+        <div class="mode-tabs" role="tablist" aria-label="Timer mode">
+          <button
+            class="mode-tab mode-tab--active"
+            id="tab-focus"
+            role="tab"
+            data-mode="focus"
+            aria-selected="true"
+          >
+            🎯 Focus
+          </button>
+          <button
+            class="mode-tab"
+            id="tab-break"
+            role="tab"
+            data-mode="break"
+            aria-selected="false"
+          >
+            ☕ Break
+          </button>
+        </div>
+
+        <!-- SVG Progress Ring + Time Display -->
+        <div class="timer-ring-wrap" aria-live="polite" aria-label="Timer">
+          <svg
+            class="timer-ring"
+            viewBox="0 0 220 220"
+            aria-hidden="true"
+          >
+            <!-- Background track -->
+            <circle
+              class="timer-ring__track"
+              cx="110" cy="110" r="90"
+            />
+            <!-- Animated progress fill -->
+            <circle
+              class="timer-ring__fill"
+              id="ring-fill"
+              cx="110" cy="110" r="90"
+            />
+          </svg>
+
+          <!-- Centered text overlay -->
+          <div class="timer-center">
+            <div class="timer-display" id="timer-display">25:00</div>
+            <div class="timer-mode-label" id="timer-mode-label">FOCUS</div>
+            <div class="timer-pomodoros" id="timer-pomodoros" title="Completed today">
+              <!-- Rendered by JS -->
+            </div>
+          </div>
+        </div>
+
+        <!-- Controls -->
+        <div class="timer-controls">
+          <button class="btn btn--teal btn--lg pomo-start-btn" id="start-pause-btn">
+            ▶ Start
+          </button>
+          <button class="btn btn--ghost pomo-icon-btn" id="reset-btn" title="Reset timer">
+            ↺
+          </button>
+          <button class="btn btn--ghost pomo-icon-btn" id="skip-btn" title="Skip to next mode">
+            ⏭
+          </button>
+        </div>
+
+      </div><!-- /pomo-card -->
+
+      <!-- ── Right Column ──────────────────────────────── -->
+      <div class="pomo-sidebar">
+
+        <!-- Duration Settings -->
+        <div class="card pomo-settings">
+          <h3 class="card__title">Settings</h3>
+          <div class="settings-list">
+
+            <div class="settings-row">
+              <span class="settings-row__label">🎯 Focus</span>
+              <div class="duration-control">
+                <button class="dur-btn" data-target="focus" data-delta="-1" aria-label="Decrease focus duration">−</button>
+                <span class="dur-value" id="focus-dur-display">25</span>
+                <button class="dur-btn" data-target="focus" data-delta="1"  aria-label="Increase focus duration">+</button>
+                <span class="dur-unit">min</span>
+              </div>
+            </div>
+
+            <div class="settings-row">
+              <span class="settings-row__label">☕ Break</span>
+              <div class="duration-control">
+                <button class="dur-btn" data-target="break" data-delta="-1" aria-label="Decrease break duration">−</button>
+                <span class="dur-value" id="break-dur-display">5</span>
+                <button class="dur-btn" data-target="break" data-delta="1"  aria-label="Increase break duration">+</button>
+                <span class="dur-unit">min</span>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- Today's Log -->
+        <div class="card pomo-log">
+          <div class="widget-header" style="margin-bottom: var(--space-4);">
+            <h3 class="card__title" style="margin-bottom:0;">Today</h3>
+            <span class="text-subtle text-xs" id="log-summary">0 sessions</span>
+          </div>
+
+          <div class="log-dots" id="log-dots">
+            <!-- Rendered by JS -->
+          </div>
+
+          <div class="log-empty hidden" id="log-empty">
+            <p class="text-subtle text-sm text-center">No sessions yet today. Start your first!</p>
+          </div>
+
+          <div class="log-total" id="log-total">
+            <!-- e.g. "Total focus time: 1h 15m" -->
+          </div>
+        </div>
+
+        <!-- Tip Card -->
+        <div class="card pomo-tip" id="pomo-tip">
+          <p class="pomo-tip__text" id="tip-text"></p>
+        </div>
+
+      </div><!-- /pomo-sidebar -->
+
+    </div><!-- /pomo-layout -->
+
+  </main>
+
+  <script src="../js/storage.js"></script>
+  <script src="../js/utils.js"></script>
+  <script src="../js/pomodoro.js"></script>
+</body>
+</html>

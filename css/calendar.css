@@ -1,0 +1,406 @@
+/* ============================================================
+   LOCKED IN FACTORY — Calendar Page Styles
+   ============================================================ */
+
+/* ── Page Header ──────────────────────────────────────────── */
+.cal-page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--space-4);
+  margin-bottom: var(--space-5);
+}
+
+/* ── API Banner ───────────────────────────────────────────── */
+.api-banner {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--radius-md);
+  font-size: var(--text-sm);
+  font-weight: 500;
+  margin-bottom: var(--space-5);
+}
+.api-banner--online  { background: var(--color-success-light); color: var(--color-success); border: 1px solid var(--color-success); }
+.api-banner--offline { background: var(--color-warning-light); color: var(--color-warning); border: 1px solid var(--color-warning); }
+
+/* ── Two-column Layout ────────────────────────────────────── */
+.cal-layout {
+  display: grid;
+  grid-template-columns: 1fr 300px;
+  gap: var(--space-6);
+  align-items: start;
+}
+
+/* ── Calendar Main ────────────────────────────────────────── */
+.cal-main {
+  padding: var(--space-5);
+}
+
+/* ── Month Navigation ─────────────────────────────────────── */
+.cal-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-5);
+}
+
+.cal-nav__heading {
+  font-size: var(--text-xl);
+  font-weight: 700;
+  color: var(--color-primary);
+  font-family: var(--font-serif);
+}
+
+.cal-nav__btn {
+  background: none;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--text-xl);
+  color: var(--color-text-muted);
+  cursor: pointer;
+  transition: background-color var(--transition-fast), color var(--transition-fast);
+}
+
+.cal-nav__btn:hover {
+  background-color: var(--color-surface-tint);
+  color: var(--color-primary);
+  border-color: var(--color-teal);
+}
+
+/* ── Calendar Grid ────────────────────────────────────────── */
+.cal-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+}
+
+/* Weekday header row */
+.cal-grid--header {
+  margin-bottom: 4px;
+}
+
+.cal-weekday {
+  text-align: center;
+  font-size: var(--text-xs);
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--color-text-subtle);
+  padding: var(--space-2) 0;
+}
+
+/* ── Day Cells ────────────────────────────────────────────── */
+.cal-cell {
+  min-height: 80px;
+  border: 1px solid transparent;
+  border-radius: var(--radius-md);
+  padding: var(--space-2);
+  cursor: pointer;
+  transition: background-color var(--transition-fast),
+              border-color    var(--transition-fast);
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  position: relative;
+}
+
+.cal-cell:hover:not(.cal-cell--empty) {
+  background-color: var(--color-surface-tint);
+  border-color: var(--color-border);
+}
+
+.cal-cell--empty {
+  /* Filler cells before month starts — no interaction */
+  cursor: default;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.cal-cell--other-month {
+  cursor: default;
+  pointer-events: none;
+}
+
+.cal-cell--other-month .cal-cell__num {
+  color: var(--color-neutral-light);
+}
+
+.cal-cell--today {
+  background-color: var(--color-surface-tint);
+  border-color: var(--color-teal);
+}
+
+.cal-cell--today .cal-cell__num {
+  background-color: var(--color-primary);
+  color: #fff;
+}
+
+.cal-cell--selected {
+  background-color: var(--color-teal-pale);
+  border-color: var(--color-teal);
+}
+
+.cal-cell--selected .cal-cell__num {
+  color: var(--color-primary);
+  font-weight: 700;
+}
+
+/* Day number badge */
+.cal-cell__num {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  font-size: var(--text-xs);
+  font-weight: 600;
+  color: var(--color-text);
+  flex-shrink: 0;
+  align-self: flex-start;
+}
+
+/* ── Event Chips inside cells ─────────────────────────────── */
+.cal-cell__events {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+  overflow: hidden;
+}
+
+.event-chip {
+  font-size: 10px;
+  font-weight: 600;
+  padding: 1px 6px;
+  border-radius: var(--radius-full);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.6;
+}
+
+/* Calendar event chips (from MongoDB/localStorage events) */
+.event-chip--event {
+  background-color: var(--color-teal-pale);
+  color: var(--color-text-on-teal);
+  border: 1px solid var(--color-teal);
+}
+
+/* Assignment/deadline chips */
+.event-chip--assignment {
+  background-color: var(--color-olive-pale);
+  color: #5a5a1a;
+  border: 1px solid var(--color-olive);
+}
+
+/* Study session indicator */
+.event-chip--session {
+  background-color: #e8e4f0;
+  color: var(--color-primary);
+  border: 1px solid var(--color-primary-light);
+}
+
+/* "+N more" overflow indicator */
+.event-chip--more {
+  background: none;
+  border: none;
+  color: var(--color-text-subtle);
+  font-size: 9px;
+  padding-left: var(--space-1);
+}
+
+/* ── Day Panel (right column) ─────────────────────────────── */
+.day-panel {
+  position: sticky;
+  top: calc(var(--navbar-height) + var(--space-6));
+  max-height: calc(100vh - var(--navbar-height) - var(--space-12));
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+}
+
+.day-panel__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-3);
+  margin-bottom: var(--space-4);
+}
+
+.day-panel__date {
+  font-size: var(--text-lg);
+  font-weight: 700;
+  color: var(--color-primary);
+}
+
+.day-panel__count {
+  margin-top: 2px;
+}
+
+/* Events list */
+.day-events-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  flex: 1;
+}
+
+.day-event-item {
+  display: flex;
+  gap: var(--space-3);
+  align-items: flex-start;
+  padding: var(--space-3);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border);
+  background-color: var(--color-bg);
+  transition: background-color var(--transition-fast);
+}
+
+.day-event-item:hover {
+  background-color: var(--color-surface-tint);
+}
+
+/* Color bar on left edge */
+.day-event-item__bar {
+  width: 4px;
+  border-radius: var(--radius-full);
+  flex-shrink: 0;
+  align-self: stretch;
+  min-height: 36px;
+}
+
+.day-event-item__bar--event      { background-color: var(--color-teal); }
+.day-event-item__bar--assignment { background-color: var(--color-olive); }
+.day-event-item__bar--session    { background-color: var(--color-primary-light); }
+
+.day-event-item__content {
+  flex: 1;
+  min-width: 0;
+}
+
+.day-event-item__type {
+  font-size: var(--text-xs);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--color-text-subtle);
+  margin-bottom: 2px;
+}
+
+.day-event-item__title {
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--color-text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.day-event-item__desc {
+  font-size: var(--text-xs);
+  color: var(--color-text-subtle);
+  margin-top: 2px;
+  line-height: 1.4;
+  /* Show up to 2 lines */
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.day-event-item__delete {
+  background: none;
+  border: none;
+  color: var(--color-text-subtle);
+  cursor: pointer;
+  font-size: var(--text-base);
+  padding: 2px;
+  border-radius: var(--radius-sm);
+  flex-shrink: 0;
+  transition: color var(--transition-fast), background-color var(--transition-fast);
+  line-height: 1;
+}
+
+.day-event-item__delete:hover {
+  color: var(--color-danger);
+  background-color: var(--color-danger-light);
+}
+
+/* ── Form Validation Styles ───────────────────────────────── */
+.required-star {
+  color: var(--color-danger);
+  margin-left: 2px;
+}
+
+.field-error {
+  display: block;
+  color: var(--color-danger);
+  font-size: var(--text-xs);
+  font-weight: 500;
+  margin-top: var(--space-1);
+}
+
+.form-input.is-invalid,
+.form-textarea.is-invalid {
+  border-color: var(--color-danger);
+  box-shadow: 0 0 0 3px rgba(184, 50, 50, 0.12);
+}
+
+/* Clear invalid state on typing */
+.form-input.is-invalid:focus,
+.form-textarea.is-invalid:focus {
+  border-color: var(--color-teal);
+  box-shadow: 0 0 0 3px rgba(148, 199, 180, 0.25);
+}
+
+/* ── Dark Mode ────────────────────────────────────────────── */
+body.session-active .cal-cell:hover:not(.cal-cell--empty) {
+  background-color: var(--color-surface-tint);
+}
+
+body.session-active .cal-cell--today {
+  border-color: var(--color-teal);
+}
+
+body.session-active .cal-cell--selected {
+  background-color: rgba(148, 199, 180, 0.12);
+  border-color: var(--color-teal);
+}
+
+/* ── Responsive ───────────────────────────────────────────── */
+@media (max-width: 900px) {
+  .cal-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .day-panel {
+    position: static;
+    max-height: none;
+  }
+}
+
+@media (max-width: 580px) {
+  .cal-cell {
+    min-height: 56px;
+    padding: var(--space-1);
+  }
+
+  .event-chip {
+    display: none; /* hide chips on very small screens, dots only */
+  }
+
+  .cal-cell__num {
+    width: 20px;
+    height: 20px;
+    font-size: 10px;
+  }
+}

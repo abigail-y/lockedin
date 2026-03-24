@@ -1,0 +1,3495 @@
+╭─── Claude Code v2.1.72 ──────────────────────────────────────────────────────╮
+│                                        │ Tips for getting started            │
+│            Welcome back abi!           │ Run /init to create a CLAUDE.md fi… │
+│                                        │ ─────────────────────────────────── │
+│                 ▐▛███▜▌                │ Recent activity                     │
+│                ▝▜█████▛▘               │ No recent activity                  │
+│                  ▘▘ ▝▝                 │                                     │
+│                                        │                                     │
+│        Sonnet 4.6 · Claude Pro         │                                     │
+│   ~\Onedrive\Desktop\lowCode\midterm   │                                     │
+╰──────────────────────────────────────────────────────────────────────────────╯
+
+  ✻ Voice mode is now available · /voice to enable
+
+> I am building a full stack study planner website, before writing any code can 
+ you help me design the localStorage schema for the websites study sessions and 
+ progress tracking                                                              
+
+● Let me check your memory and existing project structure first.
+
+● Recalled 1 memory (ctrl+o to expand)
+
+● Here's a clean localStorage schema designed for a full-stack study planner.
+  Everything is organized under 4 top-level keys with a sp_ namespace prefix to
+  avoid collisions.
+
+  ---
+  localStorage Keys Overview
+
+  ┌─────────────┬────────┬────────────────────────────────┐
+  │     Key     │  Type  │            Purpose             │
+  ├─────────────┼────────┼────────────────────────────────┤
+  │ sp_subjects │ Array  │ Subjects/courses being studied │
+  ├─────────────┼────────┼────────────────────────────────┤
+  │ sp_sessions │ Array  │ Individual study session logs  │
+  ├─────────────┼────────┼────────────────────────────────┤
+  │ sp_goals    │ Object │ Daily/weekly study targets     │
+  ├─────────────┼────────┼────────────────────────────────┤
+  │ sp_settings │ Object │ User preferences               │
+  └─────────────┴────────┴────────────────────────────────┘
+
+  ---
+  sp_subjects — Array of Subject objects
+
+  [
+    {
+      "id": "a1b2c3",
+      "name": "Mathematics",
+      "color": "#4A90D9",
+      "icon": "📐",
+      "archived": false,
+      "createdAt": "2026-03-01T10:00:00.000Z"
+    }
+  ]
+
+  ┌───────────┬────────────┬────────────────────────────────────────────┐
+  │   Field   │    Type    │                   Notes                    │
+  ├───────────┼────────────┼────────────────────────────────────────────┤
+  │ id        │ string     │ Short random ID (e.g. crypto.randomUUID()) │
+  ├───────────┼────────────┼────────────────────────────────────────────┤
+  │ name      │ string     │ Subject label                              │
+  ├───────────┼────────────┼────────────────────────────────────────────┤
+  │ color     │ string     │ Hex color for UI differentiation           │
+  ├───────────┼────────────┼────────────────────────────────────────────┤
+  │ icon      │ string     │ Emoji or icon key                          │
+  ├───────────┼────────────┼────────────────────────────────────────────┤
+  │ archived  │ boolean    │ Soft-delete, keeps session history intact  │
+  ├───────────┼────────────┼────────────────────────────────────────────┤
+  │ createdAt │ ISO string │ Creation timestamp                         │
+  └───────────┴────────────┴────────────────────────────────────────────┘
+
+  ---
+  sp_sessions — Array of Session objects
+
+  [
+    {
+      "id": "x9y8z7",
+      "subjectId": "a1b2c3",
+      "date": "2026-03-23",
+      "startTime": "2026-03-23T14:00:00.000Z",
+      "endTime": "2026-03-23T15:30:00.000Z",
+      "durationMinutes": 90,
+      "notes": "Covered integration by parts",
+      "tags": ["exam-prep", "chapter-5"],
+      "mood": "focused"
+    }
+  ]
+
+  ┌───────────────────┬────────────┬────────────────────────────────────────┐
+  │       Field       │    Type    │                 Notes                  │
+  ├───────────────────┼────────────┼────────────────────────────────────────┤
+  │ id                │ string     │ Unique session ID                      │
+  ├───────────────────┼────────────┼────────────────────────────────────────┤
+  │ subjectId         │ string     │ FK → sp_subjects[].id                  │
+  ├───────────────────┼────────────┼────────────────────────────────────────┤
+  │ date              │ YYYY-MM-DD │ For easy day-based grouping/filtering  │
+  ├───────────────────┼────────────┼────────────────────────────────────────┤
+  │ startTime /       │ ISO string │ Full timestamps for the session        │
+  │ endTime           │            │                                        │
+  ├───────────────────┼────────────┼────────────────────────────────────────┤
+  │ durationMinutes   │ number     │ Derived from start/end, stored for     │
+  │                   │            │ fast reads                             │
+  ├───────────────────┼────────────┼────────────────────────────────────────┤
+  │ notes             │ string     │ Optional freeform notes                │
+  ├───────────────────┼────────────┼────────────────────────────────────────┤
+  │ tags              │ string[]   │ User-defined labels                    │
+  ├───────────────────┼────────────┼────────────────────────────────────────┤
+  │ mood              │ enum       │ "focused" | "neutral" | "distracted"   │
+  └───────────────────┴────────────┴────────────────────────────────────────┘
+
+  date is stored separately from startTime so you can query "all sessions on 
+  2026-03-23" without parsing timestamps.
+  durationMinutes is technically derivable but stored to avoid recalculating on 
+  every render.
+
+  ---
+  sp_goals — Object
+
+  {
+    "dailyTargetMinutes": 120,
+    "weeklyTargetMinutes": 600,
+    "perSubject": {
+      "a1b2c3": {
+        "weeklyTargetMinutes": 180
+      }
+    }
+  }
+
+  ┌─────────────────────┬────────┬───────────────────────────────────────────┐
+  │        Field        │  Type  │                   Notes                   │
+  ├─────────────────────┼────────┼───────────────────────────────────────────┤
+  │ dailyTargetMinutes  │ number │ Global daily goal                         │
+  ├─────────────────────┼────────┼───────────────────────────────────────────┤
+  │ weeklyTargetMinutes │ number │ Global weekly goal                        │
+  ├─────────────────────┼────────┼───────────────────────────────────────────┤
+  │ perSubject          │ object │ Optional per-subject weekly overrides,    │
+  │                     │        │ keyed by subjectId                        │
+  └─────────────────────┴────────┴───────────────────────────────────────────┘
+
+  ---
+  sp_settings — Object
+
+  {
+    "theme": "dark",
+    "defaultSessionDurationMinutes": 25,
+    "weekStartsOn": "monday",
+    "createdAt": "2026-03-01T10:00:00.000Z"
+  }
+
+  ┌───────────────────────────────┬───────────────┬─────────────────────────┐
+  │             Field             │     Type      │          Notes          │
+  ├───────────────────────────────┼───────────────┼─────────────────────────┤
+  │ theme                         │ "light" |     │ UI theme                │
+  │                               │ "dark"        │                         │
+  ├───────────────────────────────┼───────────────┼─────────────────────────┤
+  │ defaultSessionDurationMinutes │ number        │ Pre-fills timer/session │
+  │                               │               │  form                   │
+  ├───────────────────────────────┼───────────────┼─────────────────────────┤
+  │ weekStartsOn                  │ "monday" |    │ Affects weekly stats    │
+  │                               │ "sunday"      │ calculation             │
+  ├───────────────────────────────┼───────────────┼─────────────────────────┤
+  │ createdAt                     │ ISO string    │ When the user first set │
+  │                               │               │  up the app             │
+  └───────────────────────────────┴───────────────┴─────────────────────────┘
+
+  ---
+  What to Compute at Runtime (don't store)
+
+  These should be derived from sp_sessions on the fly:
+
+  - Streak — consecutive days with at least one session
+  - Total time per subject — sum of durationMinutes filtered by subjectId
+  - Daily/weekly progress % — sum of today's/this week's durationMinutes vs goal
+  - Session count — .length of filtered sessions
+
+  ---
+  Key Design Decisions
+
+  1. Soft deletes — archived: true on subjects instead of deleting, so session
+  history is preserved
+  2. Flat arrays — simple to serialize/deserialize, easy to filter/sort in JS
+  3. Denormalized date — string YYYY-MM-DD on sessions makes day-grouping
+  trivial without Date parsing
+  4. perSubject goals are optional overrides — keeps the schema flexible; not
+  every subject needs a target
+  5. durationMinutes stored redundantly — avoids recalculating on every render
+  loop
+
+  ---
+  Want me to also sketch out the JS helper functions (get/set wrappers, session
+  queries, streak logic) before you start coding?
+
+✻ Brewed for 42s
+
+> Yes. and before any code, the features my website will include are a home     
+dashboard that'll include the users stats, a tracked study session that allows  
+the user to log in for a session like a focus mode built in the website, a      
+pomodoro timer, a calendar to plan and view assignments and deadlines, a        
+deadline tracker, and a flash card section to make and review. While coding, go 
+ by each feature and page one by one. Front end will be html css javascript and 
+ backend with node.js, and if a database is needed MongoDB. When generating     
+code, explain the file structure and generate code step-by-step.We'll do        
+everything one by one and keep everything organized.                            
+
+● Let me save this project context to memory first, then lay everything out.
+
+● Bash(mkdir -p "C:\Users\abiga\.claude\projects\C--Users-abiga-Onedrive-Desktop
+      -lowCode-midterm\memory")
+  ⎿  Interrupted · What should Claude do instead?
+
+● Got it. Here's the full plan before any code is written.
+
+  ---
+  Updated localStorage Schema (with all features)
+
+  The previous 4 keys expand to 6:
+
+  ┌────────────────┬──────┬───────────────────────────────┐
+  │      Key       │ New? │            Purpose            │
+  ├────────────────┼──────┼───────────────────────────────┤
+  │ sp_subjects    │ —    │ Subjects/courses              │
+  ├────────────────┼──────┼───────────────────────────────┤
+  │ sp_sessions    │ —    │ Study session logs            │
+  ├────────────────┼──────┼───────────────────────────────┤
+  │ sp_goals       │ —    │ Daily/weekly targets          │
+  ├────────────────┼──────┼───────────────────────────────┤
+  │ sp_settings    │ —    │ User preferences              │
+  ├────────────────┼──────┼───────────────────────────────┤
+  │ sp_assignments │ NEW  │ Calendar events, deadlines    │
+  ├────────────────┼──────┼───────────────────────────────┤
+  │ sp_decks       │ NEW  │ Flashcard decks + their cards │
+  └────────────────┴──────┴───────────────────────────────┘
+
+  sp_assignments
+
+  [
+    {
+      "id": "abc123",
+      "subjectId": "a1b2c3",
+      "title": "Chapter 5 Essay",
+      "type": "assignment",
+      "dueDate": "2026-04-01",
+      "dueTime": "23:59",
+      "priority": "high",
+      "completed": false,
+      "notes": "",
+      "createdAt": "2026-03-23T10:00:00.000Z"
+    }
+  ]
+  type: "assignment" | "exam" | "quiz" | "project" | "reminder"
+  priority: "low" | "medium" | "high"
+
+  sp_decks (decks contain cards inline)
+
+  [
+    {
+      "id": "deck1",
+      "subjectId": "a1b2c3",
+      "name": "Calculus Formulas",
+      "createdAt": "2026-03-23T10:00:00.000Z",
+      "cards": [
+        {
+          "id": "card1",
+          "front": "What is the power rule?",
+          "back": "d/dx[xⁿ] = nxⁿ⁻¹",
+          "lastReviewed": "2026-03-22T09:00:00.000Z",
+          "difficulty": "easy"
+        }
+      ]
+    }
+  ]
+  difficulty: "easy" | "medium" | "hard" | null (null = never reviewed)
+
+  Cards are nested inside decks. This avoids a separate sp_cards key and makes 
+  loading a deck one read.
+
+  ---
+  JS Helper Functions (storage.js)
+
+  These are the functions you'll write in storage.js — used by every page.
+
+  // ── Generic ──────────────────────────────────────────────
+  getAll(key)               // JSON.parse(localStorage.getItem(key)) || []
+  saveAll(key, data)        // localStorage.setItem(key, JSON.stringify(data))
+  generateId()              // crypto.randomUUID() short ID
+
+  // ── Subjects ─────────────────────────────────────────────
+  getSubjects()             // getAll('sp_subjects')
+  saveSubject(subject)      // append or update by id
+  deleteSubject(id)         // set archived: true (soft delete)
+
+  // ── Sessions ─────────────────────────────────────────────
+  getSessions()             // getAll('sp_sessions')
+  saveSession(session)      // append new session
+  getSessionsByDate(date)   // filter by session.date === 'YYYY-MM-DD'
+  getSessionsBySubject(id)  // filter by session.subjectId
+  getSessionsThisWeek()     // filter by date within current week range
+  getTotalMinutes(sessions) // sum of durationMinutes
+
+  // ── Assignments ──────────────────────────────────────────
+  getAssignments()          // getAll('sp_assignments')
+  saveAssignment(a)         // append or update
+  toggleComplete(id)        // flip completed boolean
+  getUpcoming(days)         // due within next N days, not completed
+  getByDate(date)           // for calendar day view
+
+  // ── Decks / Flashcards ───────────────────────────────────
+  getDecks()                // getAll('sp_decks')
+  saveDeck(deck)            // append or update deck (with cards inside)
+  deleteDeck(id)            // remove deck by id
+  addCard(deckId, card)     // push card into deck.cards
+  updateCard(deckId, card)  // update card inside deck by card.id
+  deleteCard(deckId, cardId)
+
+  // ── Goals & Settings ─────────────────────────────────────
+  getGoals()                // JSON.parse or default object
+  saveGoals(goals)
+  getSettings()             // JSON.parse or default object
+  saveSettings(settings)
+
+  // ── Stats (computed, not stored) ─────────────────────────
+  getStreak()               // count consecutive days with sessions
+  getDailyProgress()        // todayMinutes / goals.dailyTarget * 100
+  getWeeklyProgress()       // weekMinutes / goals.weeklyTarget * 100
+  getSubjectBreakdown()     // { subjectId: totalMinutes } for current week
+
+  ---
+  File Structure
+
+  midterm/
+  ├── index.html                 ← Home dashboard
+  │
+  ├── pages/
+  │   ├── session.html           ← Focus mode / session tracker
+  │   ├── pomodoro.html          ← Pomodoro timer
+  │   ├── calendar.html          ← Calendar + assignment planner
+  │   ├── deadlines.html         ← Deadline tracker list view
+  │   └── flashcards.html        ← Flashcard maker + review mode
+  │
+  ├── css/
+  │   ├── global.css             ← Shared: reset, variables, navbar, layout
+  │   ├── dashboard.css
+  │   ├── session.css
+  │   ├── pomodoro.css
+  │   ├── calendar.css
+  │   ├── deadlines.css
+  │   └── flashcards.css
+  │
+  ├── js/
+  │   ├── storage.js             ← All localStorage helpers (shared)
+  │   ├── utils.js               ← Shared utilities (date formatting, etc.)
+  │   ├── dashboard.js
+  │   ├── session.js
+  │   ├── pomodoro.js
+  │   ├── calendar.js
+  │   ├── deadlines.js
+  │   └── flashcards.js
+  │
+  ├── server/                    ← Node.js backend (if/when MongoDB needed)
+  │   ├── index.js               ← Express entry point
+  │   ├── config/
+  │   │   └── db.js              ← MongoDB connection
+  │   ├── models/
+  │   │   ├── Subject.js
+  │   │   ├── Session.js
+  │   │   ├── Assignment.js
+  │   │   └── Deck.js
+  │   └── routes/
+  │       ├── subjects.js
+  │       ├── sessions.js
+  │       ├── assignments.js
+  │       └── decks.js
+  │
+  ├── package.json
+  ├── .env
+  ├── styles.css                 ← (existing, will merge into global.css)
+  └── README.md
+
+  ---
+  Build Order (feature by feature)
+
+  ┌───────┬────────────────────┬────────────────────────────────────────────┐
+  │ Order │      Feature       │               Files touched                │
+  ├───────┼────────────────────┼────────────────────────────────────────────┤
+  │ 1     │ Global foundation  │ global.css, storage.js, utils.js           │
+  ├───────┼────────────────────┼────────────────────────────────────────────┤
+  │ 2     │ Home dashboard     │ index.html, dashboard.css, dashboard.js    │
+  ├───────┼────────────────────┼────────────────────────────────────────────┤
+  │ 3     │ Study session /    │ session.html, session.css, session.js      │
+  │       │ focus mode         │                                            │
+  ├───────┼────────────────────┼────────────────────────────────────────────┤
+  │ 4     │ Pomodoro timer     │ pomodoro.html, pomodoro.css, pomodoro.js   │
+  ├───────┼────────────────────┼────────────────────────────────────────────┤
+  │ 5     │ Calendar           │ calendar.html, calendar.css, calendar.js   │
+  ├───────┼────────────────────┼────────────────────────────────────────────┤
+  │ 6     │ Deadline tracker   │ deadlines.html, deadlines.css,             │
+  │       │                    │ deadlines.js                               │
+  ├───────┼────────────────────┼────────────────────────────────────────────┤
+  │ 7     │ Flashcards         │ flashcards.html, flashcards.css,           │
+  │       │                    │ flashcards.js                              │
+  ├───────┼────────────────────┼────────────────────────────────────────────┤
+  │ 8     │ Node.js + MongoDB  │ server/ (added only if persistence beyond  │
+  │       │                    │ localStorage is needed)                    │
+  └───────┴────────────────────┴────────────────────────────────────────────┘
+
+  ---
+  Ready to start with Step 1 — the global foundation (global.css, storage.js,
+  utils.js)? This sets up the design system and all the data helpers that every
+  other page will rely on.
+
+✻ Sautéed for 46s
+
+> Yes                                                                           
+
+● Let me read the existing files first before writing anything.
+
+● Read 2 files (ctrl+o to expand)
+
+● Good. The app is called Locked In Factory, uses a dark green color scheme. The
+   existing index.html is currently a landing page — it'll become the dashboard
+  in Step 2. The existing styles.css will be superseded by css/global.css.
+
+  Step 1 creates 3 files and 2 folders. Here's exactly what and why:
+
+  ---
+  Step 1 — What we're creating
+
+  css/
+  └── global.css     ← Design tokens, reset, navbar, shared components
+  js/
+  ├── storage.js     ← All localStorage read/write helpers
+  └── utils.js       ← Shared utilities (dates, formatting, IDs)
+
+  storage.js and utils.js will be imported by every page's JS file. global.css
+  will be imported by every page's HTML. Nothing works without these.
+
+  ---
+  File 1 of 3 — css/global.css
+
+● Bash(mkdir -p "C:\Users\abiga\Onedrive\Desktop\lowCode\midterm\css" && mkdir
+      -p "C:\Users\abiga\Onedrive\Desktop\lowCode\midterm\js" && mkdir -p
+      "C:\Users\abiga\Oned…)
+  ⎿  Done
+
+● Write(css\global.css)
+  ⎿  User rejected update to css\global.css
+       3     Imported by every page. Contains:
+       4     - CSS custom properties (design tokens)
+       5     - Reset & base styles
+       6 +   - Typography                                                
+       7     - Navbar
+       7 -   - Shared components (buttons, cards, badges, forms, modal, t
+         -oast)                                                          
+       8 +   - Shared components (buttons, cards, badges, forms)         
+       9     - Utility classes
+       9 -   - Responsive breakpoints                                    
+      10     ============================================================
+           */
+      11  
+      12  /* ── Design Tokens ────────────────────────────────────────── 
+          */
+      13  :root {
+      14 -  /* ── Brand Palette ── */                                    
+      15 -  --color-primary:        #30253E;   /* dark purple  */        
+      16 -  --color-primary-mid:    #3d3152;   /* mid purple   */        
+      17 -  --color-primary-light:  #4a3a60;   /* light purple */        
+      14 +  /* Brand colors */                                           
+      15 +  --color-primary:        #1a3c1a;                             
+      16 +  --color-primary-mid:    #2d5a2d;                             
+      17 +  --color-primary-light:  #3d6b3d;                             
+      18 +  --color-accent:         #7ab07a;                             
+      19 +  --color-accent-light:   #a0cfa0;                             
+      20 +  --color-accent-pale:    #c8e6c8;                             
+      21  
+      19 -  --color-green:          #638872;   /* muted green  */        
+      20 -  --color-green-light:    #7fa08e;   /* lighter green */       
+      22 +  /* Backgrounds */                                            
+      23 +  --color-bg:             #f0f7f0;                             
+      24 +  --color-surface:        #ffffff;                             
+      25 +  --color-surface-tint:   #d4e8d4;                             
+      26 +  --color-border:         #b0d4b0;                             
+      27  
+      22 -  --color-teal:           #94C7B4;   /* light teal   */        
+      23 -  --color-teal-pale:      #cce8e0;   /* pale teal    */        
+      28 +  /* Text */                                                   
+      29 +  --color-text:           #1a3c1a;                             
+      30 +  --color-text-muted:     #3d6b3d;                             
+      31 +  --color-text-subtle:    #6a9b6a;                             
+      32 +  --color-text-on-dark:   #f0f7f0;                             
+      33  
+      25 -  --color-neutral:        #808981;   /* gray-green   */        
+      26 -  --color-neutral-light:  #b0b8b2;   /* lighter neutral */     
+      34 +  /* Semantic colors */                                        
+      35 +  --color-danger:         #c0392b;                             
+      36 +  --color-danger-light:   #f9e5e4;                             
+      37 +  --color-warning:        #d4860a;                             
+      38 +  --color-warning-light:  #fef5e4;                             
+      39 +  --color-success:        #27ae60;                             
+      40 +  --color-success-light:  #e4f7ec;                             
+      41 +  --color-info:           #2980b9;                             
+      42 +  --color-info-light:     #e4f0f9;                             
+      43  
+      28 -  --color-olive:          #C3C88C;   /* warm olive   */        
+      29 -  --color-olive-pale:     #e8eac9;   /* pale olive   */        
+      44 +  /* Priority colors */                                        
+      45 +  --color-priority-high:   #c0392b;                            
+      46 +  --color-priority-medium: #d4860a;                            
+      47 +  --color-priority-low:    #27ae60;                            
+      48  
+      31 -  /* ── Surfaces & Backgrounds ── */                           
+      32 -  --color-bg:             #f3f4f0;   /* page background     */ 
+      33 -  --color-surface:        #ffffff;   /* card / panel        */ 
+      34 -  --color-surface-tint:   #eaf0ec;   /* subtle tinted surface *
+         -/                                                              
+      35 -  --color-border:         #cdd5cf;   /* default border      */ 
+      36 -  --color-border-strong:  #a8b4aa;   /* stronger border     */ 
+      37 -                                                               
+      38 -  /* ── Text ── */                                             
+      39 -  --color-text:           #30253E;                             
+      40 -  --color-text-muted:     #638872;                             
+      41 -  --color-text-subtle:    #808981;                             
+      42 -  --color-text-on-dark:   #f3f4f0;                             
+      43 -  --color-text-on-teal:   #1e3a30;                             
+      44 -                                                               
+      45 -  /* ── Semantic ── */                                         
+      46 -  --color-danger:         #b83232;                             
+      47 -  --color-danger-light:   #f8e8e8;                             
+      48 -  --color-warning:        #b87a14;                             
+      49 -  --color-warning-light:  #fdf2dc;                             
+      50 -  --color-success:        #2e7d52;                             
+      51 -  --color-success-light:  #e2f4eb;                             
+      52 -  --color-info:           #2563a8;                             
+      53 -  --color-info-light:     #deeaf8;                             
+      54 -                                                               
+      55 -  /* ── Priority ── */                                         
+      56 -  --color-priority-high:   #b83232;                            
+      57 -  --color-priority-medium: #b87a14;                            
+      58 -  --color-priority-low:    #2e7d52;                            
+      59 -                                                               
+      60 -  /* ── Spacing ── */                                          
+      49 +  /* Spacing scale */                                          
+      50    --space-1:  4px;
+      51    --space-2:  8px;
+      52    --space-3:  12px;
+     ...
+      58    --space-12: 48px;
+      59    --space-16: 64px;
+      60  
+      72 -  /* ── Border Radius ── */                                    
+      73 -  --radius-sm:   6px;                                          
+      74 -  --radius-md:   10px;                                         
+      75 -  --radius-lg:   16px;                                         
+      76 -  --radius-xl:   24px;                                         
+      61 +  /* Border radius */                                          
+      62 +  --radius-sm:  6px;                                           
+      63 +  --radius-md:  10px;                                          
+      64 +  --radius-lg:  16px;                                          
+      65 +  --radius-xl:  24px;                                          
+      66    --radius-full: 9999px;
+      67  
+      79 -  /* ── Shadows ── */                                          
+      80 -  --shadow-sm:  0 1px 3px  rgba(48, 37, 62, 0.08);             
+      81 -  --shadow-md:  0 4px 12px rgba(48, 37, 62, 0.12);             
+      82 -  --shadow-lg:  0 8px 28px rgba(48, 37, 62, 0.18);             
+      68 +  /* Shadows */                                                
+      69 +  --shadow-sm:  0 1px 3px rgba(26, 60, 26, 0.08);              
+      70 +  --shadow-md:  0 4px 12px rgba(26, 60, 26, 0.12);             
+      71 +  --shadow-lg:  0 8px 24px rgba(26, 60, 26, 0.16);             
+      72  
+      84 -  /* ── Typography ── */                                       
+      73 +  /* Typography */                                             
+      74    --font-sans:  'Segoe UI', system-ui, -apple-system, sans-seri
+          f;
+      75    --font-serif: Georgia, 'Times New Roman', serif;
+      76    --font-mono:  'Courier New', Courier, monospace;
+     ...
+       84    --text-3xl:  1.875rem;
+       85    --text-4xl:  2.25rem;
+       86  
+       98 -  /* ── Transitions ── */                                     
+       99 -  --transition-fast: 150ms ease;                              
+      100 -  --transition-base: 250ms ease;                              
+      101 -  --transition-slow: 400ms ease;                              
+       87 +  /* Transitions */                                           
+       88 +  --transition-fast:   150ms ease;                            
+       89 +  --transition-base:   250ms ease;                            
+       90 +  --transition-slow:   400ms ease;                            
+       91  
+      103 -  /* ── Layout ── */                                          
+      104 -  --navbar-height:  64px;                                     
+       92 +  /* Layout */                                                
+       93 +  --navbar-height: 64px;                                      
+       94    --page-max-width: 1100px;
+       95    --page-padding:   24px;
+       96  }
+     ...
+      117    padding-top: var(--navbar-height);
+      118  }
+      119  
+      131 -img, svg { display: block; max-width: 100%; }                 
+      120 +img, svg {                                                    
+      121 +  display: block;                                             
+      122 +  max-width: 100%;                                            
+      123 +}                                                             
+      124  
+      133 -input, button, textarea, select { font: inherit; }            
+      125 +input, button, textarea, select {                             
+      126 +  font: inherit;                                              
+      127 +}                                                             
+      128  
+      135 -a { color: inherit; text-decoration: none; }                  
+      129 +a {                                                           
+      130 +  color: inherit;                                             
+      131 +  text-decoration: none;                                      
+      132 +}                                                             
+      133  
+      137 -ul, ol { list-style: none; }                                  
+      134 +ul, ol {                                                      
+      135 +  list-style: none;                                           
+      136 +}                                                             
+      137  
+      138  /* ── Navbar ─────────────────────────────────────────────────
+            */
+      139  .navbar {
+     ...
+      155    font-family: var(--font-serif);
+      156    font-size: var(--text-xl);
+      157    font-weight: bold;
+      159 -  color: var(--color-teal);                                   
+      158 +  color: var(--color-accent-pale);                            
+      159    letter-spacing: 0.02em;
+      160    white-space: nowrap;
+      161  }
+     ...
+      172    gap: var(--space-2);
+      173    padding: var(--space-2) var(--space-3);
+      174    border-radius: var(--radius-sm);
+      176 -  color: var(--color-neutral-light);                          
+      175 +  color: var(--color-accent-light);                           
+      176    font-size: var(--text-sm);
+      177    font-weight: 500;
+      179 -  transition: background-color var(--transition-fast),        
+      180 -              color var(--transition-fast);                   
+      178 +  transition: background-color var(--transition-fast), color v
+          +ar(--transition-fast);                                        
+      179  }
+      180  
+      181  .navbar__link:hover {
+      182    background-color: var(--color-primary-mid);
+      185 -  color: var(--color-teal);                                   
+      183 +  color: var(--color-accent-pale);                            
+      184  }
+      185  
+      186  .navbar__link.active {
+      187    background-color: var(--color-primary-light);
+      190 -  color: var(--color-olive);                                  
+      188 +  color: #ffffff;                                             
+      189  }
+      190  
+      191  .navbar__link-icon {
+      194 -  font-size: 1.1em;                                           
+      195 -  line-height: 1;                                             
+      192 +  font-size: var(--text-base);                                
+      193  }
+      194  
+      195 +/* Hamburger — shown only on mobile */                        
+      196  .navbar__toggle {
+      197    display: none;
+      198    background: none;
+      199    border: none;
+      202 -  color: var(--color-teal);                                   
+      200 +  color: var(--color-accent-pale);                            
+      201    font-size: var(--text-2xl);
+      202    cursor: pointer;
+      203    line-height: 1;
+     ...
+      219    font-weight: 700;
+      220    color: var(--color-primary);
+      221    font-family: var(--font-serif);
+      224 -  line-height: 1.2;                                           
+      222  }
+      223  
+      224  .page-header__subtitle {
+     ...
+      244    box-shadow: var(--shadow-md);
+      245  }
+      246  
+      250 -.card--teal {                                                 
+      251 -  background-color: var(--color-teal-pale);                   
+      252 -  border-color: var(--color-teal);                            
+      253 -}                                                             
+      254 -                                                              
+      255 -.card--olive {                                                
+      256 -  background-color: var(--color-olive-pale);                  
+      257 -  border-color: var(--color-olive);                           
+      258 -}                                                             
+      259 -                                                              
+      247  .card__title {
+      248    font-size: var(--text-lg);
+      249    font-weight: 600;
+     ...
+      251    margin-bottom: var(--space-4);
+      252  }
+      253  
+      267 -.card__subtitle {                                             
+      268 -  font-size: var(--text-sm);                                  
+      269 -  color: var(--color-text-subtle);                            
+      270 -  margin-bottom: var(--space-4);                              
+      271 -}                                                             
+      272 -                                                              
+      273 -/* ── Stat Card (used on dashboard) ───────────────────────── 
+          -*/                                                            
+      274 -.stat-card {                                                  
+      275 -  background-color: var(--color-surface);                     
+      276 -  border: 1px solid var(--color-border);                      
+      277 -  border-radius: var(--radius-lg);                            
+      278 -  padding: var(--space-5) var(--space-6);                     
+      279 -  box-shadow: var(--shadow-sm);                               
+      280 -  display: flex;                                              
+      281 -  flex-direction: column;                                     
+      282 -  gap: var(--space-2);                                        
+      283 -}                                                             
+      284 -                                                              
+      285 -.stat-card__label {                                           
+      286 -  font-size: var(--text-xs);                                  
+      287 -  font-weight: 600;                                           
+      288 -  text-transform: uppercase;                                  
+      289 -  letter-spacing: 0.07em;                                     
+      290 -  color: var(--color-text-subtle);                            
+      291 -}                                                             
+      292 -                                                              
+      293 -.stat-card__value {                                           
+      294 -  font-size: var(--text-3xl);                                 
+      295 -  font-weight: 700;                                           
+      296 -  color: var(--color-primary);                                
+      297 -  line-height: 1;                                             
+      298 -}                                                             
+      299 -                                                              
+      300 -.stat-card__unit {                                            
+      301 -  font-size: var(--text-sm);                                  
+      302 -  color: var(--color-text-muted);                             
+      303 -}                                                             
+      304 -                                                              
+      305 -.stat-card--teal  { border-left: 4px solid var(--color-teal); 
+          -}                                                             
+      306 -.stat-card--green { border-left: 4px solid var(--color-green);
+          - }                                                            
+      307 -.stat-card--olive { border-left: 4px solid var(--color-olive);
+          - }                                                            
+      308 -.stat-card--neutral { border-left: 4px solid var(--color-neutr
+          -al); }                                                        
+      309 -                                                              
+      254  /* ── Buttons ────────────────────────────────────────────────
+            */
+      255  .btn {
+      256    display: inline-flex;
+     ...
+      264    font-weight: 600;
+      265    cursor: pointer;
+      266    transition: background-color var(--transition-fast),
+      323 -              transform       var(--transition-fast),         
+      324 -              box-shadow      var(--transition-fast);         
+      267 +              transform var(--transition-fast),               
+      268 +              box-shadow var(--transition-fast);              
+      269    white-space: nowrap;
+      270    user-select: none;
+      271  }
+      272  
+      329 -.btn:active:not(:disabled) { transform: scale(0.97); }        
+      273 +.btn:active {                                                 
+      274 +  transform: scale(0.97);                                     
+      275 +}                                                             
+      276  
+      277  .btn:disabled {
+      332 -  opacity: 0.45;                                              
+      278 +  opacity: 0.5;                                               
+      279    cursor: not-allowed;
+      280    transform: none;
+      281  }
+      282  
+      337 -/* Variants */                                                
+      283 +/* Primary */                                                 
+      284  .btn--primary {
+      285    background-color: var(--color-primary);
+      286    color: var(--color-text-on-dark);
+     ...
+      290    box-shadow: var(--shadow-sm);
+      291  }
+      292  
+      293 +/* Secondary */                                               
+      294  .btn--secondary {
+      295    background-color: var(--color-surface-tint);
+      296    color: var(--color-primary);
+      297    border: 1px solid var(--color-border);
+      298  }
+      299  .btn--secondary:hover:not(:disabled) {
+      353 -  background-color: var(--color-teal-pale);                   
+      354 -  border-color: var(--color-teal);                            
+      300 +  background-color: var(--color-accent-pale);                 
+      301  }
+      302  
+      357 -.btn--teal {                                                  
+      358 -  background-color: var(--color-teal);                        
+      359 -  color: var(--color-text-on-teal);                           
+      360 -}                                                             
+      361 -.btn--teal:hover:not(:disabled) {                             
+      362 -  background-color: var(--color-green-light);                 
+      363 -}                                                             
+      364 -                                                              
+      365 -.btn--olive {                                                 
+      366 -  background-color: var(--color-olive);                       
+      303 +/* Accent */                                                  
+      304 +.btn--accent {                                                
+      305 +  background-color: var(--color-accent);                      
+      306    color: var(--color-primary);
+      307  }
+      369 -.btn--olive:hover:not(:disabled) {                            
+      370 -  background-color: var(--color-olive-pale);                  
+      371 -  border: 1px solid var(--color-olive);                       
+      308 +.btn--accent:hover:not(:disabled) {                           
+      309 +  background-color: var(--color-accent-light);                
+      310  }
+      311  
+      312 +/* Danger */                                                  
+      313  .btn--danger {
+      314    background-color: var(--color-danger);
+      315    color: #ffffff;
+      316  }
+      378 -.btn--danger:hover:not(:disabled) { background-color: #9e2b2b;
+          - }                                                            
+      317 +.btn--danger:hover:not(:disabled) {                           
+      318 +  background-color: #a93226;                                  
+      319 +}                                                             
+      320  
+      321 +/* Ghost */                                                   
+      322  .btn--ghost {
+      323    background-color: transparent;
+      324    color: var(--color-primary);
+     ...
+      352    line-height: 1.4;
+      353  }
+      354  
+      413 -.badge--teal    { background-color: var(--color-teal-pale);   
+          - color: var(--color-text-on-teal); }                          
+      414 -.badge--olive   { background-color: var(--color-olive-pale);  
+          - color: #5a5a1a; }                                            
+      355  .badge--green   { background-color: var(--color-success-light)
+           ; color: var(--color-success); }
+      356  .badge--red     { background-color: var(--color-danger-light);
+             color: var(--color-danger); }
+      357  .badge--yellow  { background-color: var(--color-warning-light)
+           ; color: var(--color-warning); }
+      418 -.badge--gray    { background-color: var(--color-surface-tint);
+          -  color: var(--color-text-subtle); }                          
+      419 -.badge--purple  { background-color: #e8e4f0;                  
+          - color: var(--color-primary); }                               
+      358 +.badge--blue    { background-color: var(--color-info-light);  
+          +  color: var(--color-info); }                                 
+      359 +.badge--gray    { background-color: var(--color-surface-tint);
+          +  color: var(--color-text-muted); }                           
+      360  
+      361  /* ── Form Elements ──────────────────────────────────────────
+            */
+      362  .form-group {
+     ...
+      381    background-color: var(--color-surface);
+      382    color: var(--color-text);
+      383    font-size: var(--text-base);
+      444 -  transition: border-color var(--transition-fast),            
+      445 -              box-shadow   var(--transition-fast);            
+      384 +  transition: border-color var(--transition-fast), box-shadow 
+          +var(--transition-fast);                                       
+      385  }
+      386  
+      387  .form-input:focus,
+      388  .form-select:focus,
+      389  .form-textarea:focus {
+      390    outline: none;
+      452 -  border-color: var(--color-teal);                            
+      453 -  box-shadow: 0 0 0 3px rgba(148, 199, 180, 0.25);            
+      391 +  border-color: var(--color-accent);                          
+      392 +  box-shadow: 0 0 0 3px rgba(122, 176, 122, 0.2);             
+      393  }
+      394  
+      395  .form-textarea {
+     ...
+      397    min-height: 90px;
+      398  }
+      399  
+      461 -.form-hint {                                                  
+      462 -  font-size: var(--text-xs);                                  
+      463 -  color: var(--color-text-subtle);                            
+      464 -}                                                             
+      465 -                                                              
+      400  /* ── Modal ──────────────────────────────────────────────────
+            */
+      401  .modal-overlay {
+      402    position: fixed;
+      403    inset: 0;
+      470 -  background-color: rgba(48, 37, 62, 0.55);                   
+      404 +  background-color: rgba(26, 60, 26, 0.5);                    
+      405    display: flex;
+      406    align-items: center;
+      407    justify-content: center;
+     ...
+      422    border-radius: var(--radius-xl);
+      423    padding: var(--space-8);
+      424    width: 100%;
+      491 -  max-width: 500px;                                           
+      425 +  max-width: 480px;                                           
+      426    box-shadow: var(--shadow-lg);
+      427    transform: translateY(16px);
+      428    transition: transform var(--transition-base);
+     ...
+      449    background: none;
+      450    border: none;
+      451    font-size: var(--text-xl);
+      518 -  color: var(--color-text-subtle);                            
+      452 +  color: var(--color-text-muted);                             
+      453    cursor: pointer;
+      454    line-height: 1;
+      455    padding: var(--space-1);
+      456    border-radius: var(--radius-sm);
+      457    transition: background-color var(--transition-fast);
+      458  }
+      525 -.modal__close:hover { background-color: var(--color-surface-ti
+          -nt); }                                                        
+      459  
+      527 -.modal__footer {                                              
+      528 -  margin-top: var(--space-6);                                 
+      529 -  display: flex;                                              
+      530 -  justify-content: flex-end;                                  
+      531 -  gap: var(--space-3);                                        
+      460 +.modal__close:hover {                                         
+      461 +  background-color: var(--color-surface-tint);                
+      462  }
+      463  
+      464  /* ── Progress Bar ───────────────────────────────────────────
+            */
+     ...
+      472  
+      473  .progress-bar__fill {
+      474    height: 100%;
+      545 -  background-color: var(--color-teal);                        
+      475 +  background-color: var(--color-accent);                      
+      476    border-radius: var(--radius-full);
+      477    transition: width var(--transition-slow);
+      478  }
+      479  
+      550 -.progress-bar__fill--olive   { background-color: var(--color-o
+          -live); }                                                      
+      551 -.progress-bar__fill--green   { background-color: var(--color-g
+          -reen); }                                                      
+      552 -.progress-bar__fill--danger  { background-color: var(--color-d
+          -anger); }                                                     
+      553 -                                                              
+      480  /* ── Empty State ────────────────────────────────────────────
+            */
+      481  .empty-state {
+      482    text-align: center;
+     ...
+      484    color: var(--color-text-subtle);
+      485  }
+      486  
+      561 -.empty-state__icon  { font-size: 3rem; margin-bottom: var(--sp
+          -ace-4); }                                                     
+      487 +.empty-state__icon {                                          
+      488 +  font-size: 3rem;                                            
+      489 +  margin-bottom: var(--space-4);                              
+      490 +}                                                             
+      491 +                                                              
+      492  .empty-state__title {
+      493    font-size: var(--text-lg);
+      494    font-weight: 600;
+      495    margin-bottom: var(--space-2);
+      496    color: var(--color-text-muted);
+      497  }
+      568 -.empty-state__text { font-size: var(--text-sm); }             
+      498  
+      570 -/* ── Toast Notifications ────────────────────────────────────
+          - */                                                           
+      499 +.empty-state__text {                                          
+      500 +  font-size: var(--text-sm);                                  
+      501 +}                                                             
+      502 +                                                              
+      503 +/* ── Toast Notification ─────────────────────────────────────
+          + */                                                           
+      504  .toast-container {
+      505    position: fixed;
+      506    bottom: var(--space-6);
+     ...
+      530  .toast--success { background-color: var(--color-success); }
+      531  .toast--danger  { background-color: var(--color-danger); }
+      532  .toast--warning { background-color: var(--color-warning); }
+      600 -.toast--teal    { background-color: var(--color-green); color:
+          - #fff; }                                                      
+      533  
+      534  @keyframes toast-in {
+      535    from { opacity: 0; transform: translateX(40px); }
+     ...
+      544  }
+      545  
+      546  /* ── Utility Classes ────────────────────────────────────────
+            */
+      615 -.text-muted    { color: var(--color-text-muted); }            
+      616 -.text-subtle   { color: var(--color-text-subtle); }           
+      617 -.text-sm       { font-size: var(--text-sm); }                 
+      618 -.text-xs       { font-size: var(--text-xs); }                 
+      619 -.text-lg       { font-size: var(--text-lg); }                 
+      620 -.text-center   { text-align: center; }                        
+      621 -.font-bold     { font-weight: 700; }                          
+      622 -.font-semibold { font-weight: 600; }                          
+      547 +.text-muted   { color: var(--color-text-muted); }             
+      548 +.text-subtle  { color: var(--color-text-subtle); }            
+      549 +.text-sm      { font-size: var(--text-sm); }                  
+      550 +.text-xs      { font-size: var(--text-xs); }                  
+      551 +.text-lg      { font-size: var(--text-lg); }                  
+      552 +.text-center  { text-align: center; }                         
+      553 +.font-bold    { font-weight: 700; }                           
+      554 +.font-semibold{ font-weight: 600; }                           
+      555  
+      624 -.flex            { display: flex; }                           
+      625 -.flex-col        { display: flex; flex-direction: column; }   
+      626 -.items-center    { align-items: center; }                     
+      556 +.flex         { display: flex; }                              
+      557 +.flex-col     { display: flex; flex-direction: column; }      
+      558 +.items-center { align-items: center; }                        
+      559  .justify-between { justify-content: space-between; }
+      628 -.gap-2  { gap: var(--space-2); }                              
+      629 -.gap-4  { gap: var(--space-4); }                              
+      630 -.gap-6  { gap: var(--space-6); }                              
+      560 +.gap-2        { gap: var(--space-2); }                        
+      561 +.gap-4        { gap: var(--space-4); }                        
+      562 +.gap-6        { gap: var(--space-6); }                        
+      563  
+      564  .mt-4  { margin-top: var(--space-4); }
+      565  .mt-6  { margin-top: var(--space-6); }
+     ...
+      567  .mb-4  { margin-bottom: var(--space-4); }
+      568  .mb-6  { margin-bottom: var(--space-6); }
+      569  
+      638 -.w-full  { width: 100%; }                                     
+      639 -.hidden  { display: none !important; }                        
+      570 +.hidden { display: none !important; }                         
+      571  
+      641 -/* ══════════════════════════════════════════════════════════ 
+      642 -   SESSION ACTIVE — DARK THEME                                
+      643 -   Applied site-wide when sp_active_session exists in localSto
+          -rage.                                                         
+      644 -   Overrides CSS custom properties so every component that use
+          -s                                                             
+      645 -   var(--color-*) automatically switches to dark values.      
+      646 -══════════════════════════════════════════════════════════ */ 
+      647 -body.session-active {                                         
+      648 -  /* Re-declare color tokens for dark mode */                 
+      649 -  --color-bg:             #1a1224;                            
+      650 -  --color-surface:        #221832;                            
+      651 -  --color-surface-tint:   #2b1e40;                            
+      652 -  --color-border:         #3d2f58;                            
+      653 -  --color-border-strong:  #513f72;                            
+      654 -  --color-text:           #e8e4f0;                            
+      655 -  --color-text-muted:     #94C7B4;                            
+      656 -  --color-text-subtle:    #808981;                            
+      657 -                                                              
+      658 -  background-color: var(--color-bg);                          
+      659 -  color: var(--color-text);                                   
+      660 -  transition: background-color 0.4s ease, color 0.4s ease;    
+      661 -}                                                             
+      662 -                                                              
+      663 -body.session-active .navbar {                                 
+      664 -  background-color: #110d1a;                                  
+      665 -  border-bottom: 1px solid var(--color-primary-light);        
+      666 -}                                                             
+      667 -                                                              
+      668 -body.session-active .navbar__brand {                          
+      669 -  color: var(--color-teal);                                   
+      670 -}                                                             
+      671 -                                                              
+      672 -/* Soften stat cards in dark mode */                          
+      673 -body.session-active .stat-card {                              
+      674 -  background-color: var(--color-surface);                     
+      675 -  border-color: var(--color-border);                          
+      676 -}                                                             
+      677 -                                                              
+      678 -body.session-active .stat-card__value {                       
+      679 -  color: var(--color-teal);                                   
+      680 -}                                                             
+      681 -                                                              
+      682 -/* Form inputs in dark mode */                                
+      683 -body.session-active .form-input,                              
+      684 -body.session-active .form-select,                             
+      685 -body.session-active .form-textarea {                          
+      686 -  background-color: var(--color-surface);                     
+      687 -  border-color: var(--color-border);                          
+      688 -  color: var(--color-text);                                   
+      689 -}                                                             
+      690 -                                                              
+      691 -/* ── Mini Timer Floating Widget ─────────────────────────────
+          - */                                                           
+      692 -/* Shown in the bottom-left corner on any page when a session 
+          -is                                                            
+      693 -   active and the user is not in full-screen focus mode.      
+          -  */                                                          
+      694 -.session-mini-timer {                                         
+      695 -  position: fixed;                                            
+      696 -  bottom: var(--space-6);                                     
+      697 -  left: var(--space-6);                                       
+      698 -  z-index: 400;                                               
+      699 -  display: flex;                                              
+      700 -  align-items: center;                                        
+      701 -  background-color: #1a1224;                                  
+      702 -  border: 1px solid var(--color-teal);                        
+      703 -  border-radius: var(--radius-full);                          
+      704 -  padding: var(--space-2) var(--space-4);                     
+      705 -  gap: var(--space-3);                                        
+      706 -  box-shadow: 0 4px 24px rgba(148, 199, 180, 0.25);           
+      707 -  cursor: pointer;                                            
+      708 -  transition: transform var(--transition-fast),               
+      709 -              box-shadow var(--transition-fast);              
+      710 -  max-width: 280px;                                           
+      711 -  animation: mini-timer-in 0.3s ease forwards;                
+      712 -}                                                             
+      713 -                                                              
+      714 -.session-mini-timer:hover {                                   
+      715 -  transform: translateY(-2px);                                
+      716 -  box-shadow: 0 6px 28px rgba(148, 199, 180, 0.35);           
+      717 -}                                                             
+      718 -                                                              
+      719 -@keyframes mini-timer-in {                                    
+      720 -  from { opacity: 0; transform: translateX(-20px); }          
+      721 -  to   { opacity: 1; transform: translateX(0); }              
+      722 -}                                                             
+      723 -                                                              
+      724 -.mini-timer__inner {                                          
+      725 -  display: flex;                                              
+      726 -  align-items: center;                                        
+      727 -  gap: var(--space-2);                                        
+      728 -  overflow: hidden;                                           
+      729 -}                                                             
+      730 -                                                              
+      731 -.mini-timer__icon {                                           
+      732 -  font-size: var(--text-base);                                
+      733 -  flex-shrink: 0;                                             
+      734 -}                                                             
+      735 -                                                              
+      736 -.mini-timer__subject {                                        
+      737 -  font-size: var(--text-sm);                                  
+      738 -  font-weight: 600;                                           
+      739 -  color: var(--color-teal);                                   
+      740 -  white-space: nowrap;                                        
+      741 -  overflow: hidden;                                           
+      742 -  text-overflow: ellipsis;                                    
+      743 -  max-width: 90px;                                            
+      744 -}                                                             
+      745 -                                                              
+      746 -.mini-timer__time {                                           
+      747 -  font-family: var(--font-mono);                              
+      748 -  font-size: var(--text-sm);                                  
+      749 -  font-weight: 700;                                           
+      750 -  color: var(--color-olive);                                  
+      751 -  white-space: nowrap;                                        
+      752 -  letter-spacing: 0.04em;                                     
+      753 -}                                                             
+      754 -                                                              
+      755 -.mini-timer__expand {                                         
+      756 -  font-size: var(--text-base);                                
+      757 -  color: var(--color-neutral-light);                          
+      758 -  flex-shrink: 0;                                             
+      759 -  transition: color var(--transition-fast);                   
+      760 -}                                                             
+      761 -                                                              
+      762 -.session-mini-timer:hover .mini-timer__expand {               
+      763 -  color: var(--color-teal);                                   
+      764 -}                                                             
+      765 -                                                              
+      572  /* ── Responsive ─────────────────────────────────────────────
+            */
+      573  @media (max-width: 768px) {
+      574    :root {
+     ...
+      604    .page-header__title {
+      605      font-size: var(--text-2xl);
+      606    }
+      801 -                                                              
+      802 -  .modal {                                                    
+      803 -    padding: var(--space-6);                                  
+      804 -  }                                                           
+      607  }
+
+● It looks like the file write was blocked. Do you want me to proceed with
+  creating css/global.css, js/storage.js, and js/utils.js? If your permissions
+  are set to require approval per file, just approve each one as I go.
+
+✻ Worked for 1m 34s
+
+> For the color palettes I'd like to include these colors given in their hex    
+codes: C3C88C, 30253E, 638872, 808981, 94C7B4. You can proceed                  
+
+● Got it. Let me map those 5 colors to roles before writing anything:
+
+  ┌─────────┬─────────────┬─────────────────────────────────────────────┐
+  │   Hex   │    Color    │                    Role                     │
+  ├─────────┼─────────────┼─────────────────────────────────────────────┤
+  │ #30253E │ Dark purple │ Primary — navbar, headings, dark buttons    │
+  ├─────────┼─────────────┼─────────────────────────────────────────────┤
+  │ #638872 │ Muted green │ Accent — active states, icons, links        │
+  ├─────────┼─────────────┼─────────────────────────────────────────────┤
+  │ #94C7B4 │ Light teal  │ Accent light — hover, highlights, progress  │
+  ├─────────┼─────────────┼─────────────────────────────────────────────┤
+  │ #808981 │ Gray-green  │ Neutral — borders, muted text, subtle UI    │
+  ├─────────┼─────────────┼─────────────────────────────────────────────┤
+  │ #C3C88C │ Warm olive  │ Warm accent — badges, tags, warm highlights │
+  └─────────┴─────────────┴─────────────────────────────────────────────┘
+
+  Now writing all 3 files.
+
+  ---
+  File 1 of 3 — css/global.css
+
+● Write(css\global.css)
+  ⎿  Wrote 680 lines to css\global.css
+       1 /* ============================================================
+       2    LOCKED IN FACTORY — Global Stylesheet
+       3    Imported by every page. Contains:
+       4    - CSS custom properties (design tokens)
+       5    - Reset & base styles
+       6    - Navbar
+       7    - Shared components (buttons, cards, badges, forms, modal, to
+         ast)
+       8    - Utility classes
+       9    - Responsive breakpoints
+      10    ============================================================ 
+         */
+     … +670 lines (ctrl+o to expand)
+
+● File 2 of 3 — js/storage.js
+
+● Write(js\storage.js)
+  ⎿  Wrote 478 lines to js\storage.js
+       1 /* ============================================================
+       2    LOCKED IN FACTORY — Storage Helpers
+       3    Central module for all localStorage read/write operations.
+       4    Import this script on every page before page-specific JS.
+       5 
+       6    Keys used:
+       7      sp_subjects    — array of Subject objects
+       8      sp_sessions    — array of Session objects
+       9      sp_assignments — array of Assignment objects
+      10      sp_decks       — array of Deck objects (cards nested inside
+         )
+     … +468 lines (ctrl+o to expand)
+
+● File 3 of 3 — js/utils.js
+
+● Write(js\utils.js)
+  ⎿  Wrote 359 lines to js\utils.js
+       1 /* ============================================================
+       2    LOCKED IN FACTORY — Shared Utilities
+       3    Import this script on every page after storage.js.
+       4 
+       5    Sections:
+       6    - Date & time formatting
+       7    - Duration formatting
+       8    - DOM helpers
+       9    - Toast notifications
+      10    - Modal helpers
+     … +349 lines (ctrl+o to expand)
+
+● All 3 files are written. Here's a summary of what was built and what to know
+  before moving to Step 2:
+
+  ---
+  Step 1 Complete
+
+  css/
+  └── global.css     ✓  Design tokens, reset, navbar, components, utilities
+  js/
+  ├── storage.js     ✓  All localStorage helpers
+  └── utils.js       ✓  Date formatting, DOM helpers, toasts, modals, navbar
+  init
+
+  ---
+  Key things to know for every page going forward
+
+  Every HTML page must include these 3 lines in <head> / before </body>:
+  <!-- in <head> -->
+  <link rel="stylesheet" href="../css/global.css">
+  <link rel="stylesheet" href="../css/[page].css">
+
+  <!-- before </body> -->
+  <script src="../js/storage.js"></script>
+  <script src="../js/utils.js"></script>
+  <script src="../js/[page].js"></script>
+  (For index.html in the root, paths are ./css/ and ./js/ instead of ../)
+
+  Every page JS must call initNavbar() on load:
+  document.addEventListener('DOMContentLoaded', () => {
+    initNavbar();
+    // ... rest of page init
+  });
+
+  The navbar HTML block (copy-pasted into every page) will be written in Step 2
+  when we build index.html.
+
+  ---
+  Ready to start Step 2 — Home Dashboard (index.html, css/dashboard.css,
+  js/dashboard.js)?
+
+✻ Worked for 3m 6s
+
+> Yes, for index.html include a header with the name, a navigation bar with the 
+ features and a user profile/logout button. Have the features shown on the      
+dashboard with a small pomodoro button widget, a "start study session button",  
+a quick view of assignments and their deadlines, a mini calendar view, a        
+progress summary of study hours and streak, and a button for quick access to    
+flashcards. Layout style: use cards for each feature, keep the spacing clean    
+and have a respoinsive design. Use functional components, the right color       
+palette. Explain the layout structure first, then genereate the code, and keep  
+the design simple and sleek.                                                    
+
+● Layout Structure
+
+  Before any code, here's the exact grid plan:
+
+  ┌─────────────────────────────────────────────────────┐
+  │  NAVBAR  [Brand]  [Nav Links]  [Profile ▾]          │
+  ├─────────────────────────────────────────────────────┤
+  │  PAGE HEADER  "Good morning" + today's date         │
+  ├──────────┬──────────┬──────────┬────────────────────┤
+  │ 🔥Streak │ ⏱ Today │ 📈 Week  │ 📋 Due Soon        │  ← stats-strip (4 col)
+  ├──────────┴──────────┴──────────┴────────────────────┤
+  │                                                     │
+  │  ┌─────────────────────────┐  ┌──────────────────┐  │
+  │  │  📚 Start Study Session │  │  📋 Upcoming     │  │
+  │  │  [Subject ▾] [Start →]  │  │  Assignments     │  │
+  │  ├─────────────────────────┤  │                  │  │  ← dashboard-main (2
+  col)
+  │  │  🍅 Pomodoro            │  │  item...         │  │
+  │  │  Quick-launch widget    │  │  item...         │  │
+  │  └─────────────────────────┘  └──────────────────┘  │
+  │                                                     │
+  │  ┌─────────────────────────┐  ┌──────────────────┐  │
+  │  │  📊 Progress            │  │  📅 Mini Calendar│  │  ← dashboard-bottom (2
+   col)
+  │  │  Daily  [████░░] 70%    │  │  Mo Tu We Th Fr  │  │
+  │  │  Weekly [██░░░░] 40%    │  │  grid of days... │  │
+  │  └─────────────────────────┘  └──────────────────┘  │
+  │                                                     │
+  │  ┌─────────────────────────────────────────────────┐│
+  │  │  🃏 Flashcards  · 4 decks · 60 cards [Review→] ││  ← full-width strip
+  │  └─────────────────────────────────────────────────┘│
+  └─────────────────────────────────────────────────────┘
+
+  Responsive behaviour:
+  - ≥900px — full layout as above
+  - 600–899px — stats wrap to 2×2, main/bottom collapse to 1 col
+  - <600px — everything single column, stacked
+
+  ---
+  Now generating the 3 files.
+
+  ---
+  File 1 of 3 — index.html
+
+● Write(index.html)
+  ⎿  Added 303 lines, removed 28 lines
+        1  <!DOCTYPE html>
+        2  <html lang="en">
+        3  <head>
+        4 -    <meta charset="UTF-8">                                    
+        5 -    <meta name="viewport" content="width=device-width, initial
+          --scale=1.0">                                                  
+        6 -    <title>Locked In Factory</title>                          
+        7 -    <link rel="stylesheet" href="styles.css">                 
+        4 +  <meta charset="UTF-8" />                                    
+        5 +  <meta name="viewport" content="width=device-width, initial-s
+          +cale=1.0" />                                                  
+        6 +  <title>Locked In Factory</title>                            
+        7 +  <link rel="stylesheet" href="./css/global.css" />           
+        8 +  <link rel="stylesheet" href="./css/dashboard.css" />        
+        9  </head>
+       10  <body>
+       10 -    <header class="hero">                                     
+       11 -        <h1>Locked In Factory</h1>                            
+       12 -        <p class="tagline">Your all-in-one study planner</p>  
+       11 +                                                              
+       12 +  <!-- ── Navbar ─────────────────────────────────────────── -
+          +->                                                            
+       13 +  <nav class="navbar">                                        
+       14 +    <a class="navbar__brand" href="./index.html">Locked In Fac
+          +tory</a>                                                      
+       15 +                                                              
+       16 +    <ul class="navbar__links">                                
+       17 +      <li>                                                    
+       18 +        <a class="navbar__link" href="./index.html">          
+       19 +          <span class="navbar__link-icon">🏠</span> Dashboard 
+       20 +        </a>                                                  
+       21 +      </li>                                                   
+       22 +      <li>                                                    
+       23 +        <a class="navbar__link" href="./pages/session.html">  
+       24 +          <span class="navbar__link-icon">📚</span> Study Sess
+          +ion                                                           
+       25 +        </a>                                                  
+       26 +      </li>                                                   
+       27 +      <li>                                                    
+       28 +        <a class="navbar__link" href="./pages/pomodoro.html"> 
+       29 +          <span class="navbar__link-icon">🍅</span> Pomodoro  
+       30 +        </a>                                                  
+       31 +      </li>                                                   
+       32 +      <li>                                                    
+       33 +        <a class="navbar__link" href="./pages/calendar.html"> 
+       34 +          <span class="navbar__link-icon">📅</span> Calendar  
+       35 +        </a>                                                  
+       36 +      </li>                                                   
+       37 +      <li>                                                    
+       38 +        <a class="navbar__link" href="./pages/deadlines.html">
+       39 +          <span class="navbar__link-icon">⚠️</span> Deadlines 
+       40 +        </a>                                                  
+       41 +      </li>                                                   
+       42 +      <li>                                                    
+       43 +        <a class="navbar__link" href="./pages/flashcards.html"
+          +>                                                             
+       44 +          <span class="navbar__link-icon">🃏</span> Flashcards
+       45 +        </a>                                                  
+       46 +      </li>                                                   
+       47 +    </ul>                                                     
+       48 +                                                              
+       49 +    <!-- Profile -->                                          
+       50 +    <div class="navbar__profile">                             
+       51 +      <button class="navbar__profile-btn" id="profile-btn" ari
+          +a-expanded="false">                                           
+       52 +        <span class="navbar__profile-avatar" aria-hidden="true
+          +">👤</span>                                                   
+       53 +        <span class="navbar__profile-name" id="profile-name">S
+          +tudent</span>                                                 
+       54 +        <span class="navbar__profile-caret" aria-hidden="true"
+          +>▾</span>                                                     
+       55 +      </button>                                               
+       56 +      <div class="navbar__profile-dropdown" id="profile-dropdo
+          +wn" aria-hidden="true">                                       
+       57 +        <button class="dropdown-item" id="edit-name-btn">✏️ Edi
+          +t Name</button>                                               
+       58 +        <hr class="dropdown-divider" />                       
+       59 +        <button class="dropdown-item dropdown-item--danger" id
+          +="clear-data-btn">🗑️ Clear All Data</button>                  
+       60 +      </div>                                                  
+       61 +    </div>                                                    
+       62 +                                                              
+       63 +    <button class="navbar__toggle" id="nav-toggle" aria-label=
+          +"Toggle navigation">☰</button>                               
+       64 +  </nav>                                                      
+       65 +                                                              
+       66 +  <!-- ── Page Content ───────────────────────────────────── -
+          +->                                                            
+       67 +  <main class="page-wrapper">                                 
+       68 +                                                              
+       69 +    <!-- Page Header -->                                      
+       70 +    <header class="page-header dashboard-header">             
+       71 +      <div>                                                   
+       72 +        <h1 class="page-header__title" id="greeting">Good morn
+          +ing 👋</h1>                                                   
+       73 +        <p class="page-header__subtitle" id="today-date">Monda
+          +y, March 23, 2026</p>                                         
+       74 +      </div>                                                  
+       75 +      <button class="btn btn--primary" id="add-subject-btn">+ 
+          +Add Subject</button>                                          
+       76      </header>
+       77  
+       15 -    <section class="features">                                
+       16 -        <h2>Features</h2>                                     
+       17 -        <div class="feature-grid">                            
+       18 -            <div class="feature-card">                        
+       19 -                <h3>Tracked Study Sessions</h3>               
+       20 -                <p>Log and monitor your study hours to stay co
+          -nsistent.</p>                                                 
+       78 +    <!-- Stats Strip -->                                      
+       79 +    <section class="stats-strip" aria-label="Quick stats">    
+       80 +      <div class="stat-card stat-card--teal">                 
+       81 +        <span class="stat-card__label">🔥 Study Streak</span> 
+       82 +        <span class="stat-card__value" id="stat-streak">0</spa
+          +n>                                                            
+       83 +        <span class="stat-card__unit">days</span>             
+       84 +      </div>                                                  
+       85 +      <div class="stat-card stat-card--green">                
+       86 +        <span class="stat-card__label">⏱ Today</span>         
+       87 +        <span class="stat-card__value" id="stat-today">0m</spa
+          +n>                                                            
+       88 +        <span class="stat-card__unit" id="stat-today-goal">/ 2
+          +h goal</span>                                                 
+       89 +      </div>                                                  
+       90 +      <div class="stat-card stat-card--olive">                
+       91 +        <span class="stat-card__label">📈 This Week</span>    
+       92 +        <span class="stat-card__value" id="stat-weekly">0%</sp
+          +an>                                                           
+       93 +        <span class="stat-card__unit">of weekly goal</span>   
+       94 +      </div>                                                  
+       95 +      <div class="stat-card stat-card--neutral">              
+       96 +        <span class="stat-card__label">📋 Due Soon</span>     
+       97 +        <span class="stat-card__value" id="stat-due">0</span> 
+       98 +        <span class="stat-card__unit">in 7 days</span>        
+       99 +      </div>                                                  
+      100 +    </section>                                                
+      101 +                                                              
+      102 +    <!-- Main Grid: Session + Pomodoro | Assignments -->      
+      103 +    <section class="dashboard-main" aria-label="Main widgets">
+      104 +                                                              
+      105 +      <!-- Left column -->                                    
+      106 +      <div class="dashboard-col">                             
+      107 +                                                              
+      108 +        <!-- Study Session Widget -->                         
+      109 +        <div class="card card--elevated" id="session-widget"> 
+      110 +          <div class="widget-header">                         
+      111 +            <h2 class="card__title">📚 Study Session</h2>     
+      112 +            <a href="./pages/session.html" class="widget-link"
+          +>View →</a>                                                   
+      113 +          </div>                                              
+      114 +                                                              
+      115 +          <!-- Active session banner (hidden by default) -->  
+      116 +          <div class="active-session-banner hidden" id="active
+          +-session-banner">                                             
+      117 +            <span class="active-dot"></span>                  
+      118 +            <span id="active-session-label">Session in progres
+          +s — </span>                                                   
+      119 +            <strong id="active-session-elapsed">00:00</strong>
+      120 +            <a href="./pages/session.html" class="btn btn--sm 
+          +btn--teal">Resume</a>                                         
+      121 +          </div>                                              
+      122 +                                                              
+      123 +          <div id="session-start-ui">                         
+      124 +            <p class="text-muted text-sm" style="margin-bottom
+          +: var(--space-4);">                                           
+      125 +              Choose a subject and start a focused session.   
+      126 +            </p>                                              
+      127 +            <div class="form-group" style="margin-bottom: var(
+          +--space-4);">                                                 
+      128 +              <label class="form-label" for="session-subject-s
+          +elect">Subject</label>                                        
+      129 +              <select class="form-select" id="session-subject-
+          +select">                                                      
+      130 +                <option value="">— Select subject —</option>  
+      131 +              </select>                                       
+      132              </div>
+       22 -            <div class="feature-card">                        
+       23 -                <h3>Pomodoro Timer</h3>                       
+       24 -                <p>Stay focused with timed work and break inte
+          -rvals.</p>                                                    
+      133 +            <a href="./pages/session.html" class="btn btn--pri
+          +mary w-full" id="start-session-btn">                          
+      134 +              ▶ Start Session                                 
+      135 +            </a>                                              
+      136 +            <p class="no-subjects-hint hidden text-subtle text
+          +-sm mt-4" id="no-subjects-hint">                              
+      137 +              No subjects yet. <a href="./pages/session.html" 
+          +style="color: var(--color-teal); text-decoration: underline;">
+          +Add one first →</a>                                           
+      138 +            </p>                                              
+      139 +          </div>                                              
+      140 +        </div>                                                
+      141 +                                                              
+      142 +        <!-- Pomodoro Widget -->                              
+      143 +        <div class="card pomodoro-widget" id="pomodoro-widget"
+          +>                                                             
+      144 +          <div class="widget-header">                         
+      145 +            <h2 class="card__title">🍅 Pomodoro</h2>          
+      146 +            <a href="./pages/pomodoro.html" class="widget-link
+          +">Open →</a>                                                  
+      147 +          </div>                                              
+      148 +          <div class="pomodoro-display">                      
+      149 +            <div class="pomodoro-time" id="pomodoro-display">2
+          +5:00</div>                                                    
+      150 +            <div class="pomodoro-label text-subtle text-sm">Fo
+          +cus interval</div>                                            
+      151 +          </div>                                              
+      152 +          <div class="pomodoro-actions">                      
+      153 +            <a href="./pages/pomodoro.html" class="btn btn--pr
+          +imary btn--lg w-full">                                        
+      154 +              🍅 Launch Pomodoro                              
+      155 +            </a>                                              
+      156 +          </div>                                              
+      157 +        </div>                                                
+      158 +                                                              
+      159 +      </div><!-- /left col -->                                
+      160 +                                                              
+      161 +      <!-- Assignments Widget (right column) -->              
+      162 +      <div class="card card--elevated" id="assignments-widget"
+          +>                                                             
+      163 +        <div class="widget-header">                           
+      164 +          <h2 class="card__title">📋 Upcoming Deadlines</h2>  
+      165 +          <a href="./pages/deadlines.html" class="widget-link"
+          +>View all →</a>                                               
+      166 +        </div>                                                
+      167 +        <ul class="assignments-list" id="assignments-list">   
+      168 +          <!-- Rendered by JS -->                             
+      169 +        </ul>                                                 
+      170 +        <div class="empty-state hidden" id="assignments-empty"
+          +>                                                             
+      171 +          <div class="empty-state__icon">✅</div>             
+      172 +          <p class="empty-state__title">All clear!</p>        
+      173 +          <p class="empty-state__text">No upcoming deadlines.<
+          +/p>                                                           
+      174 +          <a href="./pages/deadlines.html" class="btn btn--sec
+          +ondary btn--sm mt-4">Add Deadline</a>                         
+      175 +        </div>                                                
+      176 +      </div>                                                  
+      177 +                                                              
+      178 +    </section><!-- /dashboard-main -->                        
+      179 +                                                              
+      180 +    <!-- Bottom Grid: Progress | Calendar -->                 
+      181 +    <section class="dashboard-bottom" aria-label="Progress and
+          + calendar">                                                   
+      182 +                                                              
+      183 +      <!-- Progress Widget -->                                
+      184 +      <div class="card" id="progress-widget">                 
+      185 +        <div class="widget-header">                           
+      186 +          <h2 class="card__title">📊 Progress</h2>            
+      187 +          <a href="./pages/session.html" class="widget-link">H
+          +istory →</a>                                                  
+      188 +        </div>                                                
+      189 +                                                              
+      190 +        <div class="progress-section">                        
+      191 +          <div class="progress-row">                          
+      192 +            <div class="flex justify-between text-sm mb-4">   
+      193 +              <span class="font-semibold">Today</span>        
+      194 +              <span class="text-muted" id="daily-progress-labe
+          +l">0m / 2h</span>                                             
+      195              </div>
+       26 -            <div class="feature-card">                        
+       27 -                <h3>Calendar + Weekly Summary View</h3>       
+       28 -                <p>See your week at a glance and plan ahead.</
+          -p>                                                            
+      196 +            <div class="progress-bar">                        
+      197 +              <div class="progress-bar__fill" id="daily-progre
+          +ss-bar" style="width: 0%"></div>                              
+      198              </div>
+       30 -            <div class="feature-card">                        
+       31 -                <h3>Assignment Deadline Tracker</h3>          
+       32 -                <p>Never miss a due date again.</p>           
+      199 +          </div>                                              
+      200 +                                                              
+      201 +          <div class="progress-row" style="margin-top: var(--s
+          +pace-5);">                                                    
+      202 +            <div class="flex justify-between text-sm mb-4">   
+      203 +              <span class="font-semibold">This Week</span>    
+      204 +              <span class="text-muted" id="weekly-progress-lab
+          +el">0m / 10h</span>                                           
+      205              </div>
+       34 -            <div class="feature-card">                        
+       35 -                <h3>Flash Cards</h3>                          
+       36 -                <p>Review and retain key concepts with ease.</
+          -p>                                                            
+      206 +            <div class="progress-bar">                        
+      207 +              <div class="progress-bar__fill progress-bar__fil
+          +l--olive" id="weekly-progress-bar" style="width: 0%"></div>   
+      208              </div>
+      209 +          </div>                                              
+      210          </div>
+      211 +                                                              
+      212 +        <!-- Subject breakdown -->                            
+      213 +        <div class="subject-breakdown" id="subject-breakdown">
+      214 +          <!-- Rendered by JS -->                             
+      215 +        </div>                                                
+      216 +                                                              
+      217 +        <div class="empty-state hidden" id="progress-empty" st
+          +yle="padding: var(--space-8);">                               
+      218 +          <p class="empty-state__icon">📖</p>                 
+      219 +          <p class="empty-state__text">Start a session to see 
+          +progress here.</p>                                            
+      220 +        </div>                                                
+      221 +      </div>                                                  
+      222 +                                                              
+      223 +      <!-- Mini Calendar Widget -->                           
+      224 +      <div class="card" id="calendar-widget">                 
+      225 +        <div class="widget-header">                           
+      226 +          <h2 class="card__title">📅 Calendar</h2>            
+      227 +          <a href="./pages/calendar.html" class="widget-link">
+          +Full view →</a>                                               
+      228 +        </div>                                                
+      229 +        <div class="mini-calendar">                           
+      230 +          <div class="mini-calendar__nav">                    
+      231 +            <button class="mini-cal-btn" id="cal-prev" aria-la
+          +bel="Previous month">‹</button>                               
+      232 +            <span class="mini-calendar__month" id="cal-month-l
+          +abel">March 2026</span>                                       
+      233 +            <button class="mini-cal-btn" id="cal-next" aria-la
+          +bel="Next month">›</button>                                   
+      234 +          </div>                                              
+      235 +          <div class="mini-calendar__grid" id="cal-grid">     
+      236 +            <!-- Rendered by JS -->                           
+      237 +          </div>                                              
+      238 +          <div class="mini-calendar__legend">                 
+      239 +            <span class="legend-dot legend-dot--session"></spa
+          +n><span>Session</span>                                        
+      240 +            <span class="legend-dot legend-dot--deadline"></sp
+          +an><span>Deadline</span>                                      
+      241 +          </div>                                              
+      242 +        </div>                                                
+      243 +      </div>                                                  
+      244 +                                                              
+      245 +    </section><!-- /dashboard-bottom -->                      
+      246 +                                                              
+      247 +    <!-- Flashcards Strip -->                                 
+      248 +    <section class="card flashcards-strip" id="flashcards-widg
+          +et" aria-label="Flashcards">                                  
+      249 +      <div class="flashcards-strip__content">                 
+      250 +        <div class="flashcards-strip__icon">🃏</div>          
+      251 +        <div class="flashcards-strip__info">                  
+      252 +          <h2 class="flashcards-strip__title">Flashcards</h2> 
+      253 +          <p class="flashcards-strip__meta text-muted text-sm"
+          + id="flashcards-meta">                                        
+      254 +            No decks yet — create your first deck to start rev
+          +iewing.                                                       
+      255 +          </p>                                                
+      256 +        </div>                                                
+      257 +      </div>                                                  
+      258 +      <div class="flashcards-strip__actions">                 
+      259 +        <a href="./pages/flashcards.html" class="btn btn--oliv
+          +e">+ New Deck</a>                                             
+      260 +        <a href="./pages/flashcards.html" class="btn btn--prim
+          +ary" id="flashcards-review-btn">                              
+      261 +          Review Cards →                                      
+      262 +        </a>                                                  
+      263 +      </div>                                                  
+      264      </section>
+      265  
+       41 -    <footer>                                                  
+       42 -        <p>Locked In Factory &copy; 2026</p>                  
+       43 -    </footer>                                                 
+      266 +  </main><!-- /page-wrapper -->                               
+      267 +                                                              
+      268 +  <!-- ── Edit Name Modal ────────────────────────────────── -
+          +->                                                            
+      269 +  <div class="modal-overlay" id="edit-name-modal" aria-modal="
+          +true" role="dialog">                                          
+      270 +    <div class="modal">                                       
+      271 +      <div class="modal__header">                             
+      272 +        <h2 class="modal__title">Edit Your Name</h2>          
+      273 +        <button class="modal__close" data-close="edit-name-mod
+          +al" aria-label="Close">✕</button>                             
+      274 +      </div>                                                  
+      275 +      <div class="form-group">                                
+      276 +        <label class="form-label" for="name-input">Your Name</
+          +label>                                                        
+      277 +        <input class="form-input" type="text" id="name-input" 
+          +placeholder="e.g. Alex" maxlength="30" />                     
+      278 +      </div>                                                  
+      279 +      <div class="modal__footer">                             
+      280 +        <button class="btn btn--secondary" data-close="edit-na
+          +me-modal">Cancel</button>                                     
+      281 +        <button class="btn btn--primary" id="save-name-btn">Sa
+          +ve</button>                                                   
+      282 +      </div>                                                  
+      283 +    </div>                                                    
+      284 +  </div>                                                      
+      285 +                                                              
+      286 +  <!-- ── Add Subject Modal ──────────────────────────────── -
+          +->                                                            
+      287 +  <div class="modal-overlay" id="add-subject-modal" aria-modal
+          +="true" role="dialog">                                        
+      288 +    <div class="modal">                                       
+      289 +      <div class="modal__header">                             
+      290 +        <h2 class="modal__title">Add Subject</h2>             
+      291 +        <button class="modal__close" data-close="add-subject-m
+          +odal" aria-label="Close">✕</button>                           
+      292 +      </div>                                                  
+      293 +      <div class="flex-col gap-4">                            
+      294 +        <div class="form-group">                              
+      295 +          <label class="form-label" for="subject-name-input">S
+          +ubject Name</label>                                           
+      296 +          <input class="form-input" type="text" id="subject-na
+          +me-input" placeholder="e.g. Mathematics" maxlength="40" />    
+      297 +        </div>                                                
+      298 +        <div class="form-group">                              
+      299 +          <label class="form-label">Color</label>             
+      300 +          <div class="color-picker" id="color-picker">        
+      301 +            <!-- Rendered by JS -->                           
+      302 +          </div>                                              
+      303 +        </div>                                                
+      304 +        <div class="form-group">                              
+      305 +          <label class="form-label" for="subject-icon-input">I
+          +con (emoji)</label>                                           
+      306 +          <input class="form-input" type="text" id="subject-ic
+          +on-input" placeholder="📚" maxlength="2" style="width: 80px;" 
+          +/>                                                            
+      307 +        </div>                                                
+      308 +      </div>                                                  
+      309 +      <div class="modal__footer">                             
+      310 +        <button class="btn btn--secondary" data-close="add-sub
+          +ject-modal">Cancel</button>                                   
+      311 +        <button class="btn btn--primary" id="save-subject-btn"
+          +>Add Subject</button>                                         
+      312 +      </div>                                                  
+      313 +    </div>                                                    
+      314 +  </div>                                                      
+      315 +                                                              
+      316 +  <script src="./js/storage.js"></script>                     
+      317 +  <script src="./js/utils.js"></script>                       
+      318 +  <script src="./js/dashboard.js"></script>                   
+      319  </body>
+      320  </html>
+
+● File 2 of 3 — css/dashboard.css
+
+● Write(css\dashboard.css)
+  ⎿  Wrote 591 lines to css\dashboard.css
+       1 /* ============================================================
+       2    LOCKED IN FACTORY — Dashboard Styles
+       3    Scoped to index.html only.
+       4    Sections:
+       5    - Navbar profile extension
+       6    - Page header
+       7    - Stats strip
+       8    - Dashboard grids (main + bottom)
+       9    - Session widget
+      10    - Pomodoro widget
+     … +581 lines (ctrl+o to expand)
+
+● File 3 of 3 — js/dashboard.js
+
+● Write(js\dashboard.js)
+  ⎿  Wrote 478 lines to js\dashboard.js
+       1 /* ============================================================
+       2    LOCKED IN FACTORY — Dashboard JS
+       3    Reads from localStorage via storage.js helpers and
+       4    renders all dashboard widgets.
+       5 
+       6    Init order (DOMContentLoaded):
+       7    1. initNavbar()          — from utils.js
+       8    2. renderGreeting()      — page header text
+       9    3. renderStats()         — 4 stat cards
+      10    4. renderSessionWidget() — subject dropdown, active session c
+         heck
+     … +468 lines (ctrl+o to expand)
+
+● Step 2 is complete. Here's the full picture:
+
+  ---
+  Step 2 Complete
+
+  index.html          ✓  Dashboard HTML — navbar, all widget sections, 2 modals
+  css/dashboard.css   ✓  Dashboard-specific styles — grid, widgets, calendar,
+  responsive
+  js/dashboard.js     ✓  Renders all widgets from localStorage, modals, profile
+  dropdown
+
+  ---
+  What's functional right now
+
+  ┌──────────────────┬──────────────────────────────────────────────────────┐
+  │      Widget      │                      Behaviour                       │
+  ├──────────────────┼──────────────────────────────────────────────────────┤
+  │ Navbar           │ Fixed, highlights active page, mobile hamburger      │
+  │                  │ toggle                                               │
+  ├──────────────────┼──────────────────────────────────────────────────────┤
+  │ Profile dropdown │ Toggle, edit name (saved to settings), clear all     │
+  │                  │ data                                                 │
+  ├──────────────────┼──────────────────────────────────────────────────────┤
+  │ Stats strip      │ Reads streak, today's minutes, weekly %, upcoming    │
+  │                  │ deadlines count                                      │
+  ├──────────────────┼──────────────────────────────────────────────────────┤
+  │ Greeting         │ Time-of-day greeting + user name from settings       │
+  ├──────────────────┼──────────────────────────────────────────────────────┤
+  │ Study Session    │ Populates subject dropdown from localStorage, passes │
+  │                  │  ?subject=id to session.html                         │
+  ├──────────────────┼──────────────────────────────────────────────────────┤
+  │ Active session   │ Shows live elapsed timer if a session is in progress │
+  │ banner           │                                                      │
+  ├──────────────────┼──────────────────────────────────────────────────────┤
+  │ Pomodoro widget  │ Links to pomodoro.html                               │
+  ├──────────────────┼──────────────────────────────────────────────────────┤
+  │ Assignments      │ Lists next 5 deadlines sorted by date with           │
+  │                  │ color-coded badges                                   │
+  ├──────────────────┼──────────────────────────────────────────────────────┤
+  │ Progress         │ Daily + weekly progress bars with subject breakdown  │
+  ├──────────────────┼──────────────────────────────────────────────────────┤
+  │ Mini Calendar    │ Prev/next month navigation, dots for sessions +      │
+  │                  │ deadlines                                            │
+  ├──────────────────┼──────────────────────────────────────────────────────┤
+  │ Flashcards strip │ Shows deck/card counts                               │
+  ├──────────────────┼──────────────────────────────────────────────────────┤
+  │ Add Subject      │ Color picker, emoji, name — saves to sp_subjects     │
+  │ modal            │                                                      │
+  └──────────────────┴──────────────────────────────────────────────────────┘
+
+  ---
+  Ready for Step 3 — Study Session / Focus Mode (pages/session.html,
+  css/session.css, js/session.js)?
+
+✻ Cooked for 4m 21s
+
+> For the study session / focus mode create a MongoDB schema with userID,       
+startTime, endTime, and duration. create the express routes of POST             
+/start-session                                                                  
+POST /end-session                                                               
+GET /sessions. Include a start, end, button and a session status with a live    
+timer during the session. Then connect the frontend to API. When the user       
+starts a study session switch the UI to dark mode where the dark purple is more 
+ prominent. Go step by step.                                                    
+
+● Layout Structure
+
+  Before any code, here's the plan for both states:
+
+  IDLE STATE (light):
+  ┌──────────────────────────────────────────────────────┐
+  │  NAVBAR                                              │
+  ├────────────────────────┬─────────────────────────────┤
+  │  START A SESSION       │  RECENT SESSIONS            │
+  │  ┌──────────────────┐  │  ──────────────────────     │
+  │  │ Subject ▾        │  │  📚 Math · 1h 30m · Today  │
+  │  │ ──────────────── │  │  📖 History · 45m · Mon    │
+  │  │ [Notes...]       │  │  📐 Physics · 2h · Sun     │
+  │  │                  │  │                             │
+  │  │ [▶ Start Session]│  │  [Load more from API]       │
+  │  └──────────────────┘  │                             │
+  └────────────────────────┴─────────────────────────────┘
+
+  ACTIVE SESSION (dark mode — dark purple prominent):
+  ┌──────────────────────────────────────────────────────┐
+  │  NAVBAR (dark)                                       │
+  ├──────────────────────────────────────────────────────┤
+  │                                                      │
+  │   SESSION IN PROGRESS          [Subject badge]       │
+  │                                                      │
+  │         ┌────────────────────────────┐               │
+  │         │     01 : 23 : 45          │   ← live HH:MM:SS
+  │         └────────────────────────────┘               │
+  │                                                      │
+  │   ┌──────────────────────────────────────────┐       │
+  │   │  Notes (optional during session)...      │       │
+  │   └──────────────────────────────────────────┘       │
+  │                                                      │
+  │               [■ End Session]                        │
+  │                                                      │
+  │   ── End Session Panel (slides in on click) ──       │
+  │   Mood: 😊 😐 😵   [Confirm End]                     │
+  │                                                      │
+  └──────────────────────────────────────────────────────┘
+
+  Files being created:
+
+  server/
+  ├── index.js            ← Express entry point
+  ├── config/db.js        ← MongoDB connection
+  ├── models/Session.js   ← Mongoose schema
+  └── routes/sessions.js  ← 3 routes + ping
+
+  pages/session.html
+  css/session.css
+  js/session.js
+  package.json
+  .env
+
+  ---
+  File 1 of 9 — package.json
+
+● Write(package.json)
+  ⎿  Wrote 19 lines to package.json
+       1 {
+       2   "name": "locked-in-factory",
+       3   "version": "1.0.0",
+       4   "description": "Full-stack study planner",
+       5   "main": "server/index.js",
+       6   "scripts": {
+       7     "start": "node server/index.js",
+       8     "dev": "nodemon server/index.js"
+       9   },
+      10   "dependencies": {
+     … +9 lines (ctrl+o to expand)
+
+● File 2 of 9 — .env
+
+● Write(.env)
+  ⎿  Wrote 5 lines to .env
+      1 # MongoDB connection string — replace with your Atlas URI or loca
+        l URI
+      2 MONGO_URI=mongodb://localhost:27017/locked-in-factory
+      3 
+      4 # Port the Express server listens on
+      5 PORT=5000
+
+● File 3 of 9 — server/config/db.js
+
+● Bash(mkdir -p "C:\Users\abiga\Onedrive\Desktop\lowCode\midterm\server\config"
+      && mkdir -p
+      "C:\Users\abiga\Onedrive\Desktop\lowCode\midterm\server\models" && mkdir
+      -p…)
+  ⎿  Done
+
+● Write(server\config\db.js)
+  ⎿  Wrote 17 lines to server\config\db.js
+       1 const mongoose = require('mongoose');
+       2 
+       3 /**
+       4  * Connect to MongoDB using the URI in .env
+       5  * Exits the process on failure so the server doesn't silently r
+         un without a DB.
+       6  */
+       7 async function connectDB() {
+       8   try {
+       9     const conn = await mongoose.connect(process.env.MONGO_URI);
+      10     console.log(`MongoDB connected: ${conn.connection.host}`);
+     … +7 lines (ctrl+o to expand)
+
+● File 4 of 9 — server/models/Session.js
+
+● Write(server\models\Session.js)
+  ⎿  Wrote 71 lines to server\models\Session.js
+       1 const mongoose = require('mongoose');
+       2 
+       3 /**
+       4  * Session Schema
+       5  *
+       6  * userId          — anonymous browser ID stored in localStorage
+          (sp_user_id).
+       7  *                   No auth system yet; this ties sessions to a
+          specific browser.
+       8  * subjectId       — matches the ID used in localStorage sp_subj
+         ects.
+       9  * subjectName     — denormalized for quick display without a jo
+         in.
+      10  * startTime       — set when POST /start-session is called.
+     … +61 lines (ctrl+o to expand)
+
+● File 5 of 9 — server/routes/sessions.js
+
+● Write(server\routes\sessions.js)
+  ⎿  Wrote 128 lines to server\routes\sessions.js
+       1 const express = require('express');
+       2 const router  = express.Router();
+       3 const Session = require('../models/Session');
+       4 
+       5 // ── GET /api/sessions/ping ─────────────────────────────────
+       6 // Health check — the frontend calls this on load to decide
+       7 // whether to operate in online (MongoDB) or offline (localStora
+         ge) mode.
+       8 router.get('/ping', (req, res) => {
+       9   res.json({ ok: true });
+      10 });
+     … +118 lines (ctrl+o to expand)
+
+● File 6 of 9 — server/index.js
+
+● Write(server\index.js)
+  ⎿  Wrote 33 lines to server\index.js
+       1 require('dotenv').config();
+       2 const express    = require('express');
+       3 const cors       = require('cors');
+       4 const connectDB  = require('./config/db');
+       5 const sessionRoutes = require('./routes/sessions');
+       6 
+       7 const app  = express();
+       8 const PORT = process.env.PORT || 5000;
+       9 
+      10 // ── Connect to MongoDB ─────────────────────────────────────
+     … +23 lines (ctrl+o to expand)
+
+● File 7 of 9 — pages/session.html
+
+● Write(pages\session.html)
+  ⎿  Wrote 180 lines to pages\session.html
+       1 <!DOCTYPE html>
+       2 <html lang="en">
+       3 <head>
+       4   <meta charset="UTF-8" />
+       5   <meta name="viewport" content="width=device-width, initial-sca
+         le=1.0" />
+       6   <title>Study Session — Locked In Factory</title>
+       7   <link rel="stylesheet" href="../css/global.css" />
+       8   <link rel="stylesheet" href="../css/session.css" />
+       9 </head>
+      10 <body>
+     … +170 lines (ctrl+o to expand)
+
+● File 8 of 9 — css/session.css
+
+● Write(css\session.css)
+  ⎿  Wrote 418 lines to css\session.css
+       1 /* ============================================================
+       2    LOCKED IN FACTORY — Session Page Styles
+       3    Two distinct visual states:
+       4    1. Idle   — light, standard layout
+       5    2. Active — full dark-mode focus overlay (body.session-active
+         )
+       6    ============================================================ 
+         */
+       7 
+       8 /* ── API Status Banner ────────────────────────────────────── *
+         /
+       9 .api-banner {
+      10   display: flex;
+     … +408 lines (ctrl+o to expand)
+
+● File 9 of 9 — js/session.js
+
+● Write(js\session.js)
+  ⎿  Wrote 461 lines to js\session.js
+       1 /* ============================================================
+       2    LOCKED IN FACTORY — Session Page JS
+       3 
+       4    Responsibilities:
+       5    1. Check if API is reachable (online/offline mode)
+       6    2. Populate subject dropdown from localStorage
+       7    3. Start session → POST /api/sessions/start + localStorage
+       8    4. Live timer tick during active session
+       9    5. End session → POST /api/sessions/end + localStorage
+      10    6. Toggle dark focus mode (body.session-active)
+     … +451 lines (ctrl+o to expand)
+
+● All 9 files are written. Here's the complete picture:
+
+  ---
+  Step 3 Complete
+
+  package.json              ✓  express, mongoose, cors, dotenv, nodemon
+  .env                      ✓  MONGO_URI + PORT
+  server/config/db.js       ✓  mongoose.connect() with error exit
+  server/models/Session.js  ✓  userId, startTime, endTime, durationMinutes,
+  notes, mood
+  server/routes/sessions.js ✓  POST /start · POST /end · GET / · GET /ping
+  server/index.js           ✓  Express + CORS + route mounting
+  pages/session.html        ✓  Idle view + full-screen focus overlay
+  css/session.css           ✓  Light idle + dark purple focus mode
+  js/session.js             ✓  API calls + localStorage fallback + live timer
+
+  ---
+  How to run the backend
+
+  # From the project root:
+  npm install
+  npm run dev
+
+  Key behaviours
+
+  ┌───────────────────┬─────────────────────────────────────────────────────┐
+  │     Behaviour     │                       Detail                        │
+  ├───────────────────┼─────────────────────────────────────────────────────┤
+  │ Online mode       │ Session saved to MongoDB + localStorage             │
+  ├───────────────────┼─────────────────────────────────────────────────────┤
+  │ Offline mode      │ Banner warns user, saves to localStorage only       │
+  ├───────────────────┼─────────────────────────────────────────────────────┤
+  │ Page refresh      │ sp_active_session in localStorage restores the dark │
+  │ mid-session       │  mode + running timer                               │
+  ├───────────────────┼─────────────────────────────────────────────────────┤
+  │ Dark mode         │ body.session-active class triggers full dark purple │
+  │                   │  takeover with glowing teal timer                   │
+  ├───────────────────┼─────────────────────────────────────────────────────┤
+  │ Start from        │ ?subject=id URL param pre-selects the subject       │
+  │ dashboard         │                                                     │
+  ├───────────────────┼─────────────────────────────────────────────────────┤
+  │ End session panel │ Mood selector + notes, then saves to both MongoDB   │
+  │                   │ and localStorage                                    │
+  ├───────────────────┼─────────────────────────────────────────────────────┤
+  │ Recent sessions   │ Fetches from API with pagination, falls back to     │
+  │                   │ localStorage                                        │
+  └───────────────────┴─────────────────────────────────────────────────────┘
+
+  ---
+  Ready for Step 4 — Pomodoro Timer (pages/pomodoro.html, css/pomodoro.css,
+  js/pomodoro.js)?
+
+✻ Baked for 4m 17s
+
+> Can you have a button to minimize the sessions timer and still have it show   
+in the corner, and keep the dark more throughout the whole website while the    
+user is in a study session.                                                     
+
+● Good request. Two things to implement:
+  1. Minimize button on the focus overlay → collapses to a floating corner
+  widget
+  2. Persistent dark mode across all pages when a session is active (using CSS
+  custom property overrides on body.session-active)
+
+  Here's exactly what changes and why:
+
+  css/global.css     — add body.session-active dark theme vars + mini timer
+  widget styles
+  js/storage.js      — move getActiveSession() here (shared by all pages)
+  js/utils.js        — add initSessionDarkMode() + renderMiniTimer() + auto-init
+  pages/session.html — add minimize button to focus topbar
+  js/session.js      — add minimize logic, update enter/exit focus mode
+
+  ---
+  Edit 1 of 5 — css/global.css — dark theme + mini timer widget
+
+● Update(css\global.css)
+  ⎿  Added 125 lines
+      638  .w-full  { width: 100%; }
+      639  .hidden  { display: none !important; }
+      640  
+      641 +/* ══════════════════════════════════════════════════════════ 
+      642 +   SESSION ACTIVE — DARK THEME                                
+      643 +   Applied site-wide when sp_active_session exists in localSto
+          +rage.                                                         
+      644 +   Overrides CSS custom properties so every component that use
+          +s                                                             
+      645 +   var(--color-*) automatically switches to dark values.      
+      646 +══════════════════════════════════════════════════════════ */ 
+      647 +body.session-active {                                         
+      648 +  /* Re-declare color tokens for dark mode */                 
+      649 +  --color-bg:             #1a1224;                            
+      650 +  --color-surface:        #221832;                            
+      651 +  --color-surface-tint:   #2b1e40;                            
+      652 +  --color-border:         #3d2f58;                            
+      653 +  --color-border-strong:  #513f72;                            
+      654 +  --color-text:           #e8e4f0;                            
+      655 +  --color-text-muted:     #94C7B4;                            
+      656 +  --color-text-subtle:    #808981;                            
+      657 +                                                              
+      658 +  background-color: var(--color-bg);                          
+      659 +  color: var(--color-text);                                   
+      660 +  transition: background-color 0.4s ease, color 0.4s ease;    
+      661 +}                                                             
+      662 +                                                              
+      663 +body.session-active .navbar {                                 
+      664 +  background-color: #110d1a;                                  
+      665 +  border-bottom: 1px solid var(--color-primary-light);        
+      666 +}                                                             
+      667 +                                                              
+      668 +body.session-active .navbar__brand {                          
+      669 +  color: var(--color-teal);                                   
+      670 +}                                                             
+      671 +                                                              
+      672 +/* Soften stat cards in dark mode */                          
+      673 +body.session-active .stat-card {                              
+      674 +  background-color: var(--color-surface);                     
+      675 +  border-color: var(--color-border);                          
+      676 +}                                                             
+      677 +                                                              
+      678 +body.session-active .stat-card__value {                       
+      679 +  color: var(--color-teal);                                   
+      680 +}                                                             
+      681 +                                                              
+      682 +/* Form inputs in dark mode */                                
+      683 +body.session-active .form-input,                              
+      684 +body.session-active .form-select,                             
+      685 +body.session-active .form-textarea {                          
+      686 +  background-color: var(--color-surface);                     
+      687 +  border-color: var(--color-border);                          
+      688 +  color: var(--color-text);                                   
+      689 +}                                                             
+      690 +                                                              
+      691 +/* ── Mini Timer Floating Widget ─────────────────────────────
+          + */                                                           
+      692 +/* Shown in the bottom-left corner on any page when a session 
+          +is                                                            
+      693 +   active and the user is not in full-screen focus mode.      
+          +  */                                                          
+      694 +.session-mini-timer {                                         
+      695 +  position: fixed;                                            
+      696 +  bottom: var(--space-6);                                     
+      697 +  left: var(--space-6);                                       
+      698 +  z-index: 400;                                               
+      699 +  display: flex;                                              
+      700 +  align-items: center;                                        
+      701 +  background-color: #1a1224;                                  
+      702 +  border: 1px solid var(--color-teal);                        
+      703 +  border-radius: var(--radius-full);                          
+      704 +  padding: var(--space-2) var(--space-4);                     
+      705 +  gap: var(--space-3);                                        
+      706 +  box-shadow: 0 4px 24px rgba(148, 199, 180, 0.25);           
+      707 +  cursor: pointer;                                            
+      708 +  transition: transform var(--transition-fast),               
+      709 +              box-shadow var(--transition-fast);              
+      710 +  max-width: 280px;                                           
+      711 +  animation: mini-timer-in 0.3s ease forwards;                
+      712 +}                                                             
+      713 +                                                              
+      714 +.session-mini-timer:hover {                                   
+      715 +  transform: translateY(-2px);                                
+      716 +  box-shadow: 0 6px 28px rgba(148, 199, 180, 0.35);           
+      717 +}                                                             
+      718 +                                                              
+      719 +@keyframes mini-timer-in {                                    
+      720 +  from { opacity: 0; transform: translateX(-20px); }          
+      721 +  to   { opacity: 1; transform: translateX(0); }              
+      722 +}                                                             
+      723 +                                                              
+      724 +.mini-timer__inner {                                          
+      725 +  display: flex;                                              
+      726 +  align-items: center;                                        
+      727 +  gap: var(--space-2);                                        
+      728 +  overflow: hidden;                                           
+      729 +}                                                             
+      730 +                                                              
+      731 +.mini-timer__icon {                                           
+      732 +  font-size: var(--text-base);                                
+      733 +  flex-shrink: 0;                                             
+      734 +}                                                             
+      735 +                                                              
+      736 +.mini-timer__subject {                                        
+      737 +  font-size: var(--text-sm);                                  
+      738 +  font-weight: 600;                                           
+      739 +  color: var(--color-teal);                                   
+      740 +  white-space: nowrap;                                        
+      741 +  overflow: hidden;                                           
+      742 +  text-overflow: ellipsis;                                    
+      743 +  max-width: 90px;                                            
+      744 +}                                                             
+      745 +                                                              
+      746 +.mini-timer__time {                                           
+      747 +  font-family: var(--font-mono);                              
+      748 +  font-size: var(--text-sm);                                  
+      749 +  font-weight: 700;                                           
+      750 +  color: var(--color-olive);                                  
+      751 +  white-space: nowrap;                                        
+      752 +  letter-spacing: 0.04em;                                     
+      753 +}                                                             
+      754 +                                                              
+      755 +.mini-timer__expand {                                         
+      756 +  font-size: var(--text-base);                                
+      757 +  color: var(--color-neutral-light);                          
+      758 +  flex-shrink: 0;                                             
+      759 +  transition: color var(--transition-fast);                   
+      760 +}                                                             
+      761 +                                                              
+      762 +.session-mini-timer:hover .mini-timer__expand {               
+      763 +  color: var(--color-teal);                                   
+      764 +}                                                             
+      765 +                                                              
+      766  /* ── Responsive ─────────────────────────────────────────────
+            */
+      767  @media (max-width: 768px) {
+      768    :root {
+
+● Edit 2 of 5 — js/storage.js — move getActiveSession() here so all pages can 
+  use it
+
+● Update(js\storage.js)
+  ⎿  Added 23 lines
+      443    }, {});
+      444  }
+      445  
+      446 +// ── Active Session ─────────────────────────────────────────
+      447 +                                                              
+      448 +/**                                                           
+      449 + * Read the in-progress session from localStorage.            
+      450 + * Returns null if no session is currently running.           
+      451 + * Shape: { mongoId, subjectId, subjectName, subjectIcon, subj
+          +ectColor, startTime, notes }                                  
+      452 + */                                                           
+      453 +function getActiveSession() {                                 
+      454 +  try {                                                       
+      455 +    const raw = localStorage.getItem('sp_active_session');    
+      456 +    return raw ? JSON.parse(raw) : null;                      
+      457 +  } catch {                                                   
+      458 +    return null;                                              
+      459 +  }                                                           
+      460 +}                                                             
+      461 +                                                              
+      462 +/**                                                           
+      463 + * Clear the active session from localStorage.                
+      464 + */                                                           
+      465 +function clearActiveSession() {                               
+      466 +  localStorage.removeItem('sp_active_session');               
+      467 +}                                                             
+      468 +                                                              
+      469  // ── Date Helpers (used internally by storage.js) ───────────
+      470  // Full set of date helpers lives in utils.js.
+      471  // These minimal versions are here so storage.js is self-conta
+           ined.
+
+● Edit 3 of 5 — js/utils.js — add initSessionDarkMode, renderMiniTimer, 
+  auto-init
+
+● Update(js\utils.js)
+  ⎿  Added 128 lines
+      357      timer = setTimeout(() => fn(...args), delay);
+      358    };
+      359  }
+      360 +                                                              
+      361 +// ── Session Dark Mode (runs on every page) ─────────────────
+      362 +                                                              
+      363 +let _miniTimerInterval = null;                                
+      364 +                                                              
+      365 +/**                                                           
+      366 + * Called automatically on DOMContentLoaded on every page.    
+      367 + * If a session is active, applies dark theme and renders     
+      368 + * the floating mini timer widget.                            
+      369 + */                                                           
+      370 +function initSessionDarkMode() {                              
+      371 +  const active = getActiveSession();                          
+      372 +  if (!active) return;                                        
+      373 +  document.body.classList.add('session-active');              
+      374 +  renderMiniTimer(active);                                    
+      375 +}                                                             
+      376 +                                                              
+      377 +/**                                                           
+      378 + * Create (or show) the floating mini timer widget in the bott
+          +om-left corner.                                               
+      379 + * Idempotent — calling it multiple times won't create duplica
+          +tes.                                                          
+      380 + * @param {object} sessionData — the sp_active_session object 
+      381 + */                                                           
+      382 +function renderMiniTimer(sessionData) {                       
+      383 +  // If widget already exists, just un-hide it and restart tic
+          +k                                                             
+      384 +  const existing = document.getElementById('session-mini-timer
+          +');                                                           
+      385 +  if (existing) {                                             
+      386 +    show(existing);                                           
+      387 +    _startMiniTimerTick(sessionData.startTime);               
+      388 +    return;                                                   
+      389 +  }                                                           
+      390 +                                                              
+      391 +  // Determine href — works whether we're in /pages/ or root  
+      392 +  const inPagesDir  = window.location.pathname.includes('/page
+          +s/');                                                         
+      393 +  const sessionHref = inPagesDir ? './session.html' : './pages
+          +/session.html';                                               
+      394 +  const isSessionPg = window.location.pathname.endsWith('sessi
+          +on.html');                                                    
+      395 +                                                              
+      396 +  // Build widget                                             
+      397 +  const widget = createElement('div', {                       
+      398 +    cls:   'session-mini-timer',                              
+      399 +    attrs: { id: 'session-mini-timer', role: 'button', title: 
+          +'Click to open session' },                                    
+      400 +  });                                                         
+      401 +                                                              
+      402 +  const inner = createElement('div', { cls: 'mini-timer__inner
+          +' });                                                         
+      403 +                                                              
+      404 +  inner.appendChild(createElement('span', { cls: 'active-dot' 
+          +}));                                                          
+      405 +  inner.appendChild(createElement('span', {                   
+      406 +    cls:  'mini-timer__icon',                                 
+      407 +    text: sessionData.subjectIcon || '📚',                    
+      408 +  }));                                                        
+      409 +  inner.appendChild(createElement('span', {                   
+      410 +    cls:   'mini-timer__subject',                             
+      411 +    text:  sessionData.subjectName || 'Session',              
+      412 +    attrs: { id: 'mini-timer-subject' },                      
+      413 +  }));                                                        
+      414 +  inner.appendChild(createElement('span', {                   
+      415 +    cls:   'mini-timer__time',                                
+      416 +    text:  '00:00:00',                                        
+      417 +    attrs: { id: 'mini-timer-time' },                         
+      418 +  }));                                                        
+      419 +  inner.appendChild(createElement('span', {                   
+      420 +    cls:  'mini-timer__expand',                               
+      421 +    text: '↗',                                                
+      422 +  }));                                                        
+      423 +                                                              
+      424 +  widget.appendChild(inner);                                  
+      425 +                                                              
+      426 +  // Click: on session page dispatch custom event so session.j
+          +s can expand                                                  
+      427 +  // On other pages: navigate to session.html                 
+      428 +  widget.addEventListener('click', () => {                    
+      429 +    if (isSessionPg) {                                        
+      430 +      document.dispatchEvent(new CustomEvent('mini-timer-expan
+          +d'));                                                         
+      431 +    } else {                                                  
+      432 +      window.location.href = sessionHref;                     
+      433 +    }                                                         
+      434 +  });                                                         
+      435 +                                                              
+      436 +  document.body.appendChild(widget);                          
+      437 +  _startMiniTimerTick(sessionData.startTime);                 
+      438 +}                                                             
+      439 +                                                              
+      440 +/**                                                           
+      441 + * Hide the mini timer (e.g. when entering full focus mode).  
+      442 + */                                                           
+      443 +function hideMiniTimer() {                                    
+      444 +  const w = document.getElementById('session-mini-timer');    
+      445 +  if (w) hide(w);                                             
+      446 +  if (_miniTimerInterval) {                                   
+      447 +    clearInterval(_miniTimerInterval);                        
+      448 +    _miniTimerInterval = null;                                
+      449 +  }                                                           
+      450 +}                                                             
+      451 +                                                              
+      452 +/**                                                           
+      453 + * Remove the mini timer entirely and clear dark mode.        
+      454 + * Called when a session ends.                                
+      455 + */                                                           
+      456 +function removeMiniTimer() {                                  
+      457 +  hideMiniTimer();                                            
+      458 +  const w = document.getElementById('session-mini-timer');    
+      459 +  if (w) w.remove();                                          
+      460 +  document.body.classList.remove('session-active');           
+      461 +}                                                             
+      462 +                                                              
+      463 +/**                                                           
+      464 + * Tick the mini timer every second.                          
+      465 + * @param {string} startTimeIso                               
+      466 + */                                                           
+      467 +function _startMiniTimerTick(startTimeIso) {                  
+      468 +  if (_miniTimerInterval) clearInterval(_miniTimerInterval);  
+      469 +                                                              
+      470 +  function tick() {                                           
+      471 +    const el = document.getElementById('mini-timer-time');    
+      472 +    if (!el) { clearInterval(_miniTimerInterval); return; }   
+      473 +    const elapsed = Math.floor((Date.now() - new Date(startTim
+          +eIso)) / 1000);                                               
+      474 +    const h = String(Math.floor(elapsed / 3600)).padStart(2, '
+          +0');                                                          
+      475 +    const m = String(Math.floor((elapsed % 3600) / 60)).padSta
+          +rt(2, '0');                                                   
+      476 +    const s = String(elapsed % 60).padStart(2, '0');          
+      477 +    el.textContent = `${h}:${m}:${s}`;                        
+      478 +  }                                                           
+      479 +                                                              
+      480 +  tick();                                                     
+      481 +  _miniTimerInterval = setInterval(tick, 1000);               
+      482 +}                                                             
+      483 +                                                              
+      484 +// ── Auto-init on every page ────────────────────────────────
+      485 +// Runs after DOM is ready. Applies dark mode + mini timer    
+      486 +// on any page where sp_active_session is set.                
+      487 +document.addEventListener('DOMContentLoaded', initSessionDarkM
+          +ode);                                                         
+
+● Edit 4 of 5 — pages/session.html — add minimize button
+
+● Update(pages\session.html)
+  ⎿  Added 3 lines
+      113          <span class="active-dot"></span>
+      114          <span>Session in progress</span>
+      115        </div>
+      116 +      <button class="focus-minimize-btn" id="minimize-btn" tit
+          +le="Minimize to corner">                                      
+      117 +        <span>—</span> Minimize                               
+      118 +      </button>                                               
+      119      </div>
+      120  
+      121      <!-- Subject badge -->
+
+● Edit 5 of 5 — js/session.js — minimize logic + updated enter/exit focus mode
+
+● Update(js\session.js)
+  ⎿  Added 7 lines
+      122    $id('end-btn').addEventListener('click', showEndPanel);
+      123    $id('cancel-end-btn').addEventListener('click', hideEndPanel
+           );
+      124    $id('confirm-end-btn').addEventListener('click', handleEndSe
+           ssion);
+      125 +  $id('minimize-btn').addEventListener('click', handleMinimize
+          +);                                                            
+      126  
+      127 +  // Mini timer expand event dispatched by utils.js when widge
+          +t is clicked on session page                                  
+      128 +  document.addEventListener('mini-timer-expand', () => {      
+      129 +    const active = getActiveSession();                        
+      130 +    if (active) enterFocusMode(active);                       
+      131 +  });                                                         
+      132 +                                                              
+      133    // Mood selector
+      134    $qsa('.mood-btn').forEach(btn => {
+      135      btn.addEventListener('click', () => {
+
+● Now update enterFocusMode, add handleMinimize, and update exitFocusMode:
+
+● Update(js\session.js)
+  ⎿  Added 35 lines, removed 5 lines
+      293  
+      294  // ── Focus Mode (Dark UI) ───────────────────────────────────
+      295  function enterFocusMode(sessionData) {
+      296 -  // Switch body to dark theme                                
+      296 +  // Ensure dark theme is on                                  
+      297    document.body.classList.add('session-active');
+      298  
+      299 +  // Hide mini timer (we're in full-screen focus — no need for
+          + corner widget)                                               
+      300 +  hideMiniTimer();                                            
+      301 +                                                              
+      302 +  // Lock scroll behind the overlay                           
+      303 +  document.body.classList.add('focus-mode');                  
+      304 +                                                              
+      305    // Hide idle view, show focus overlay
+      306    hide($id('idle-view'));
+      307    show($id('active-view'));
+     ...
+      314    // Restore any notes already typed
+      315    $id('session-notes-active').value = sessionData.notes || '';
+      316  
+      311 -  // Start the live timer                                     
+      317 +  // Start the live focus timer                               
+      318    startTimer(sessionData.startTime);
+      319  }
+      320  
+      321 +/**                                                           
+      322 + * Minimize: collapse full-screen overlay → floating corner wi
+          +dget.                                                         
+      323 + * Dark mode stays on. User can still navigate the site.      
+      324 + */                                                           
+      325 +function handleMinimize() {                                   
+      326 +  // Stop the large focus timer                               
+      327 +  if (timerInterval) {                                        
+      328 +    clearInterval(timerInterval);                             
+      329 +    timerInterval = null;                                     
+      330 +  }                                                           
+      331 +                                                              
+      332 +  // Restore scroll + hide overlay, but keep dark theme       
+      333 +  document.body.classList.remove('focus-mode');               
+      334 +  hide($id('active-view'));                                   
+      335 +  show($id('idle-view'));                                     
+      336 +  hide($id('end-panel'));                                     
+      337 +                                                              
+      338 +  // Show the floating mini timer in the corner               
+      339 +  const active = getActiveSession();                          
+      340 +  if (active) renderMiniTimer(active);                        
+      341 +}                                                             
+      342 +                                                              
+      343  function exitFocusMode() {
+      316 -  // Stop the timer                                           
+      344 +  // Stop the focus timer                                     
+      345    if (timerInterval) {
+      346      clearInterval(timerInterval);
+      347      timerInterval = null;
+      348    }
+      349  
+      322 -  // Switch body back to light theme                          
+      323 -  document.body.classList.remove('session-active');           
+      350 +  // Session is done — remove dark theme and mini timer entire
+          +ly                                                            
+      351 +  removeMiniTimer(); // clears dark class + widget            
+      352  
+      353 +  document.body.classList.remove('focus-mode');               
+      354 +                                                              
+      355    // Show idle view, hide focus overlay
+      356    show($id('idle-view'));
+      357    hide($id('active-view'));
+
+● Now remove the local getActiveSession() from session.js since it's now in
+  storage.js:
+
+● Update(js\session.js)
+  ⎿  Removed 10 lines
+      210    };
+      211  }
+      212  
+      213 -// ── Active Session State from localStorage ─────────────────
+      214 -function getActiveSession() {                                 
+      215 -  try {                                                       
+      216 -    const raw = localStorage.getItem('sp_active_session');    
+      217 -    return raw ? JSON.parse(raw) : null;                      
+      218 -  } catch {                                                   
+      219 -    return null;                                              
+      220 -  }                                                           
+      221 -}                                                             
+      222 -                                                              
+      213  // ── End Session ────────────────────────────────────────────
+      214  function showEndPanel() {
+      215    const active = getActiveSession();
+
+● Finally, add the focus-mode overflow rule and minimize button styles to
+  session.css:
+
+● Update(css\session.css)
+  ⎿  Added 2 lines, removed 3 lines
+      123     and showing #active-view full-screen overlay.
+      124  ══════════════════════════════════════════════════════════ */
+      125  
+      126 -/* Dark mode body — smooth transition in */                   
+      127 -body.session-active {                                         
+      128 -  background-color: #1a1224; /* deeper than --color-primary fo
+          -r immersion */                                                
+      126 +/* Scroll lock — only when full focus overlay is visible */   
+      127 +body.focus-mode {                                             
+      128    overflow: hidden;
+      129  }
+      130  
+
+● Now add the minimize button styles to session.css:
+
+● Update(css\session.css)
+  ⎿  Added 23 lines
+      200    50%       { opacity: 0.4; transform: scale(1.4); }
+      201  }
+      202  
+      203 +/* Minimize button */                                         
+      204 +.focus-minimize-btn {                                         
+      205 +  display: flex;                                              
+      206 +  align-items: center;                                        
+      207 +  gap: var(--space-2);                                        
+      208 +  background: rgba(255, 255, 255, 0.06);                      
+      209 +  border: 1px solid var(--color-primary-light);               
+      210 +  border-radius: var(--radius-full);                          
+      211 +  color: var(--color-neutral-light);                          
+      212 +  font-size: var(--text-xs);                                  
+      213 +  font-weight: 600;                                           
+      214 +  letter-spacing: 0.05em;                                     
+      215 +  padding: var(--space-1) var(--space-3);                     
+      216 +  cursor: pointer;                                            
+      217 +  transition: background-color var(--transition-fast), color v
+          +ar(--transition-fast);                                        
+      218 +}                                                             
+      219 +                                                              
+      220 +.focus-minimize-btn:hover {                                   
+      221 +  background-color: rgba(148, 199, 180, 0.1);                 
+      222 +  color: var(--color-teal);                                   
+      223 +  border-color: var(--color-teal);                            
+      224 +}                                                             
+      225 +                                                              
+      226  /* Subject badge */
+      227  .focus-subject {
+      228    display: flex;
+
+● Done. Here's the complete summary of what changed:
+
+  ---
+  Changes Complete
+
+  How it works now
+
+  Minimize button (—  Minimize):
+  - Lives in the top-right of the focus overlay
+  - Clicking it: stops the large timer, hides the full-screen overlay, shows the
+   idle view — but keeps dark mode on
+  - The floating mini timer appears in the bottom-left corner with the pulsing
+  dot, subject name, and running HH:MM:SS clock
+  - Clicking the mini timer on session.html → re-expands back to full focus mode
+  - Clicking the mini timer on any other page → navigates to session.html which
+  restores focus mode
+
+  Persistent dark mode:
+  - utils.js auto-runs initSessionDarkMode() on DOMContentLoaded on every page
+  - It checks localStorage for sp_active_session — if found, adds
+  body.session-active
+  - body.session-active in global.css overrides CSS custom properties
+  (--color-bg, --color-surface, --color-text, etc.) so every card, navbar, and
+  input on every page automatically goes dark
+  - Dark mode is removed only when the session is ended (via removeMiniTimer()
+  which also strips the class)
+
+  Key separation of concerns:
+
+  ┌─────────────────────┬───────────────────────────────┬───────────────────┐
+  │        Class        │         Applied when          │   Removed when    │
+  ├─────────────────────┼───────────────────────────────┼───────────────────┤
+  │ body.session-active │ Session starts / page loads   │ Session ends      │
+  │                     │ with active session           │                   │
+  ├─────────────────────┼───────────────────────────────┼───────────────────┤
+  │ body.focus-mode     │ Full-screen overlay is        │ Minimized or      │
+  │                     │ visible                       │ session ends      │
+  └─────────────────────┴───────────────────────────────┴───────────────────┘
+
+  Ready for Step 4 — Pomodoro Timer?
+
+✻ Churned for 3m 50s
+
+> yes!                                                                          
+  ⎿  Interrupted · What should Claude do instead?
+
+> Yes, for the pomodoro timer, habe fields of currentTime, isRunning,           
+mode(focus or break), focusDuration, breakDuration. Ensure useEffect is being   
+used, decrease every second, stop at 0. Have the start, pause and reset logic   
+and have it switch bewteeen focus and break at 0 and reset the time based on    
+mode.                                                                           
+
+● Quick note before writing: useEffect is a React hook. Since this project is
+  vanilla JavaScript, I'll implement the exact same lifecycle pattern in vanilla
+   JS — a state object with your 5 fields, and explicit "effect" functions that
+  mirror what useEffect does (manage the interval when isRunning changes, update
+   the display when currentTime changes, swap colors/labels when mode changes).
+  The logic is identical, just without the React wrapper.
+
+  ---
+  Layout Structure
+
+  ┌──────────────────────────────────────────────────────┐
+  │  NAVBAR                                              │
+  ├──────────────────────────────────────────────────────┤
+  │             [Focus]  [Break]   ← mode tabs           │
+  │                                                      │
+  │         ┌─────────────────────────┐                  │
+  │         │   ╭─────────────╮       │                  │
+  │         │  ╱               ╲      │                  │
+  │         │ │    25:00        │      │  ← SVG ring     │
+  │         │ │    FOCUS        │      │                  │
+  │         │ │   🍅🍅🍅         │      │                  │
+  │         │  ╲               ╱      │                  │
+  │         │   ╰─────────────╯       │                  │
+  │         └─────────────────────────┘                  │
+  │                                                      │
+  │         [▶ Start]    [↺ Reset]                       │
+  │                                                      │
+  │  ┌──────────────────────────────────────────┐        │
+  │  │  Focus  [−] 25 [+] min                   │        │
+  │  │  Break  [−]  5 [+] min                   │        │
+  │  └──────────────────────────────────────────┘        │
+  │                                                      │
+  │  ┌── Today ──────────────────────────────────┐       │
+  │  │  🍅 🍅 🍅  3 focus sessions completed     │       │
+  │  └───────────────────────────────────────────┘       │
+  └──────────────────────────────────────────────────────┘
+
+  ---
+  File 1 of 3 — pages/pomodoro.html
+
+● Write(pages\pomodoro.html)
+  ⎿  Wrote 173 lines to pages\pomodoro.html
+       1 <!DOCTYPE html>
+       2 <html lang="en">
+       3 <head>
+       4   <meta charset="UTF-8" />
+       5   <meta name="viewport" content="width=device-width, initial-sca
+         le=1.0" />
+       6   <title>Pomodoro — Locked In Factory</title>
+       7   <link rel="stylesheet" href="../css/global.css" />
+       8   <link rel="stylesheet" href="../css/pomodoro.css" />
+       9 </head>
+      10 <body>
+     … +163 lines (ctrl+o to expand)
+
+● File 2 of 3 — css/pomodoro.css
+
+● Write(css\pomodoro.css)
+  ⎿  Wrote 403 lines to css\pomodoro.css
+      1 /* ============================================================
+      2    LOCKED IN FACTORY — Pomodoro Timer Styles
+      3    ============================================================ *
+        /
+      4 
+      5 /* ── Page Layout ──────────────────────────────────────────── */
+      6 .pomo-page-header {
+      7   text-align: center;
+      8   margin-bottom: var(--space-8);
+      9 }
+     … +393 lines (ctrl+o to expand)
+
+● File 3 of 3 — js/pomodoro.js
+
+● Write(js\pomodoro.js)
+  ⎿  Wrote 529 lines to js\pomodoro.js
+       1 /* ============================================================
+       2    LOCKED IN FACTORY — Pomodoro Timer
+       3 
+       4    STATE FIELDS  (mirrors the React state you described)
+       5    ─────────────────────────────────────────────────────────
+       6    currentTime:    number   — seconds remaining (counts down)
+       7    isRunning:      boolean  — whether the interval is ticking
+       8    mode:           string   — 'focus' | 'break'
+       9    focusDuration:  number   — focus length in minutes
+      10    breakDuration:  number   — break length in minutes
+     … +519 lines (ctrl+o to expand)
+
+● Step 4 complete. Here's the full breakdown:
+
+  ---
+  Step 4 Complete
+
+  pages/pomodoro.html   ✓
+  css/pomodoro.css      ✓
+  js/pomodoro.js        ✓
+
+  ---
+  The 5 state fields — exactly as described
+
+  ┌───────────────┬─────────┬─────────┬──────────────────────────────────────┐
+  │     Field     │  Type   │ Default │               Purpose                │
+  ├───────────────┼─────────┼─────────┼──────────────────────────────────────┤
+  │ currentTime   │ number  │ 25 * 60 │ Seconds remaining, decremented each  │
+  │               │         │         │ tick                                 │
+  ├───────────────┼─────────┼─────────┼──────────────────────────────────────┤
+  │ isRunning     │ boolean │ false   │ Controls whether setInterval is      │
+  │               │         │         │ active                               │
+  ├───────────────┼─────────┼─────────┼──────────────────────────────────────┤
+  │ mode          │ string  │ 'focus' │ 'focus' or 'break'                   │
+  ├───────────────┼─────────┼─────────┼──────────────────────────────────────┤
+  │ focusDuration │ number  │ 25      │ Minutes for focus sessions           │
+  ├───────────────┼─────────┼─────────┼──────────────────────────────────────┤
+  │ breakDuration │ number  │ 5       │ Minutes for break sessions           │
+  └───────────────┴─────────┴─────────┴──────────────────────────────────────┘
+
+  ---
+  The 3 useEffect equivalents
+
+  ┌──────────────────────┬──────────────────────────┬────────────────────────┐
+  │ Vanilla JS function  │     React equivalent     │      What it does      │
+  ├──────────────────────┼──────────────────────────┼────────────────────────┤
+  │                      │                          │ Starts or clears       │
+  │ effect_isRunning()   │ useEffect([isRunning])   │ setInterval when       │
+  │                      │                          │ isRunning flips        │
+  ├──────────────────────┼──────────────────────────┼────────────────────────┤
+  │                      │                          │ Updates display + SVG  │
+  │ effect_currentTime() │ useEffect([currentTime]) │ ring; fires            │
+  │                      │                          │ handleTimerEnd() at 0  │
+  ├──────────────────────┼──────────────────────────┼────────────────────────┤
+  │                      │                          │ Swaps colors/labels,   │
+  │ effect_mode()        │ useEffect([mode])        │ resets currentTime to  │
+  │                      │                          │ new duration           │
+  └──────────────────────┴──────────────────────────┴────────────────────────┘
+
+  ---
+  Behaviour at currentTime === 0
+
+  - Focus ends → logs the session (sp_pomodoro_log), shows toast, plays beep,
+  auto-switches to break
+  - Break ends → shows toast, plays beep, auto-switches back to focus
+  - Neither auto-starts the next interval — user must press Start
+
+  Keyboard shortcuts
+
+  Space → Start/Pause &nbsp;|&nbsp; R → Reset &nbsp;|&nbsp; S → Skip
+
+  ---
+  Ready for Step 5 — Calendar?
+
+✻ Cogitated for 3m 53s
+
+> Yes, for the calendar, the schema should include userId, title, date,         
+description. with a simple clickable monthly calendar shown in the dashboard.   
+Event form should have basic validation of title, date, description. API should 
+ be POST /events                                                                
+GET /events                                                                     
+DELETE /events/:id                                                              
+
+● Layout Structure
+
+  ┌──────────────────────────────────────────────────────────┐
+  │  NAVBAR                                                  │
+  ├──────────────────────────────────────────────────────────┤
+  │  Calendar                              [+ Add Event]     │
+  ├───────────────────────────────┬──────────────────────────┤
+  │  [‹]  March 2026  [›]         │  Tuesday, Mar 24         │
+  │                               │  ─────────────────────  │
+  │  Mo Tu We Th Fr Sa Su         │  ● Event title          │
+  │  ─────────────────────────    │    Description...  [✕]  │
+  │  [  ][  ][  ][  ][  ][ 1][ 2] │                         │
+  │  [ 3][ 4][ 5]...              │  📋 Assignment due      │
+  │      ┌─event chip─┐           │    History essay  [✕]  │
+  │  [...][████████  ][  ]...     │                         │
+  │      └────────────┘           │  (empty state if none)  │
+  │  ...                          │                         │
+  │                               │  [+ Add Event This Day] │
+  └───────────────────────────────┴──────────────────────────┘
+
+  ---
+  Files:
+  server/models/Event.js      ← new
+  server/routes/events.js     ← new
+  server/index.js             ← edit (mount route)
+  pages/calendar.html         ← new
+  css/calendar.css            ← new
+  js/calendar.js              ← new
+
+  ---
+  File 1 of 6 — server/models/Event.js
+
+● Write(server\models\Event.js)
+  ⎿  Wrote 43 lines to server\models\Event.js
+       1 const mongoose = require('mongoose');
+       2 
+       3 /**
+       4  * Event Schema
+       5  *
+       6  * userId      — anonymous browser ID from localStorage (sp_user
+         _id).
+       7  * title       — event name, required, max 100 chars.
+       8  * date        — stored as YYYY-MM-DD string for fast, join-free
+       9  *               filtering by day or month without timezone issu
+         es.
+      10  * description — optional freeform notes for the event.
+     … +33 lines (ctrl+o to expand)
+
+● File 2 of 6 — server/routes/events.js
+
+● Write(server\routes\events.js)
+  ⎿  Wrote 128 lines to server\routes\events.js
+       1 const express = require('express');
+       2 const router  = express.Router();
+       3 const Event   = require('../models/Event');
+       4 
+       5 // ── POST /api/events ───────────────────────────────────────
+       6 // Create a new calendar event.
+       7 //
+       8 // Request body:
+       9 // {
+      10 //   userId:      string  (required)
+     … +118 lines (ctrl+o to expand)
+
+● Edit — server/index.js — mount events route
+
+● Update(server\index.js)
+  ⎿  Added 1 line
+      3  const cors       = require('cors');
+      4  const connectDB  = require('./config/db');
+      5  const sessionRoutes = require('./routes/sessions');
+      6 +const eventRoutes   = require('./routes/events');               
+      7  
+      8  const app  = express();
+      9  const PORT = process.env.PORT || 5000;
+
+● Update(server\index.js)
+  ⎿  Added 1 line
+      22  
+      23  // ── Routes ─────────────────────────────────────────────────
+      24  app.use('/api/sessions', sessionRoutes);
+      25 +app.use('/api/events',   eventRoutes);                         
+      26  
+      27  // ── 404 fallback ───────────────────────────────────────────
+      28  app.use((req, res) => {
+
+● File 3 of 6 — pages/calendar.html
+
+● Write(pages\calendar.html)
+  ⎿  Wrote 175 lines to pages\calendar.html
+       1 <!DOCTYPE html>
+       2 <html lang="en">
+       3 <head>
+       4   <meta charset="UTF-8" />
+       5   <meta name="viewport" content="width=device-width, initial-sca
+         le=1.0" />
+       6   <title>Calendar — Locked In Factory</title>
+       7   <link rel="stylesheet" href="../css/global.css" />
+       8   <link rel="stylesheet" href="../css/calendar.css" />
+       9 </head>
+      10 <body>
+     … +165 lines (ctrl+o to expand)
+
+● File 4 of 6 — css/calendar.css
+
+● Write(css\calendar.css)
+  ⎿  Wrote 406 lines to css\calendar.css
+       1 /* ============================================================
+       2    LOCKED IN FACTORY — Calendar Page Styles
+       3    ============================================================ 
+         */
+       4 
+       5 /* ── Page Header ──────────────────────────────────────────── *
+         /
+       6 .cal-page-header {
+       7   display: flex;
+       8   align-items: center;
+       9   justify-content: space-between;
+      10   flex-wrap: wrap;
+     … +396 lines (ctrl+o to expand)
+
+● File 5 of 6 — js/calendar.js
+
+● Write(js\calendar.js)
+  ⎿  Wrote 607 lines to js\calendar.js
+       1 /* ============================================================
+       2    LOCKED IN FACTORY — Calendar JS
+       3 
+       4    Data sources shown on the calendar:
+       5      • Events    — created here, saved to MongoDB + localStorage
+          fallback
+       6      • Sessions  — read-only from sp_sessions (localStorage)
+       7      • Assignments — read-only from sp_assignments (localStorage
+         )
+       8 
+       9    State:
+      10      year, month     — currently displayed month
+     … +597 lines (ctrl+o to expand)
+
+● Finally, make the dashboard mini-calendar days clickable by updating one line
+  in dashboard.js:
+
+● Update(js\dashboard.js)
+  ⎿  Added 6 lines
+      325        cell.appendChild(dots);
+      326      }
+      327  
+      328 +    // Clicking a day on the mini calendar navigates to the fu
+          +ll calendar                                                   
+      329 +    cell.style.cursor = 'pointer';                            
+      330 +    cell.addEventListener('click', () => {                    
+      331 +      window.location.href = `./pages/calendar.html?date=${key
+          +}`;                                                           
+      332 +    });                                                       
+      333 +                                                              
+      334      grid.appendChild(cell);
+      335    }
+      336  
+
+● Step 5 complete.
+
+  ---
+  Step 5 Complete
+
+  server/models/Event.js   ✓  userId, title, date (YYYY-MM-DD), description
+  server/routes/events.js  ✓  POST /events · GET /events · DELETE /events/:id
+  server/index.js          ✓  events route mounted
+  pages/calendar.html      ✓  calendar grid + day panel + add event modal
+  css/calendar.css         ✓  grid layout, cell styles, chips, day panel,
+  validation
+  js/calendar.js           ✓  full calendar logic
+  js/dashboard.js          ✓  mini calendar days now link to calendar page
+
+  ---
+  How everything connects
+
+  ┌─────────────────┬───────────────────────────────────────────────────────┐
+  │      Layer      │                       Behaviour                       │
+  ├─────────────────┼───────────────────────────────────────────────────────┤
+  │ GET /events     │ Filters by userId + optional ?month=YYYY-MM for       │
+  │                 │ efficiency                                            │
+  ├─────────────────┼───────────────────────────────────────────────────────┤
+  │                 │ Server-side validation mirrors client-side — errors   │
+  │ POST /events    │ returned as { errors: { field: msg } } and shown      │
+  │                 │ inline                                                │
+  ├─────────────────┼───────────────────────────────────────────────────────┤
+  │ DELETE          │ Handles invalid ObjectId gracefully with 400          │
+  │ /events/:id     │                                                       │
+  ├─────────────────┼───────────────────────────────────────────────────────┤
+  │ Offline         │ All mutations save to sp_events in localStorage;      │
+  │ fallback        │ reads merge with assignments and sessions             │
+  ├─────────────────┼───────────────────────────────────────────────────────┤
+  │ Day panel       │ Shows events (📅), assignments (📋), sessions (📚)    │
+  │                 │ for the clicked day — each type has its own color bar │
+  ├─────────────────┼───────────────────────────────────────────────────────┤
+  │                 │ Title required (max 100), date required + must be     │
+  │ Form validation │ valid, description optional (max 500) — errors appear │
+  │                 │  inline below each field, clear as you type           │
+  ├─────────────────┼───────────────────────────────────────────────────────┤
+  │ Dashboard       │ Clicking any day now navigates to                     │
+  │ mini-calendar   │ calendar.html?date=YYYY-MM-DD which pre-selects that  │
+  │                 │ day                                                   │
+  └─────────────────┴───────────────────────────────────────────────────────┘
+
+  ---
+  Ready for Step 6 — Deadline Tracker?
+
+✻ Baked for 5m 40s
+
+> Yes. Keep the solution minimal. Have CRUD routes for assignments, have        
+userID, title, dueDate, priority(three levels), status. A form of title, due    
+date, priority. Display the assignments lists with complete button and have it  
+strikethrough. Add filter by status and sort by due date.                       
+
+● Layout Structure
+
+  ┌──────────────────────────────────────────────────────────┐
+  │  NAVBAR                                                  │
+  ├──────────────────┬───────────────────────────────────────┤
+  │  ADD ASSIGNMENT  │  [All] [Pending] [Completed]  ↕ Date │
+  │  ─────────────── │  ─────────────────────────────────── │
+  │  Title*          │  ☐  Midterm Essay    HIGH  in 2 days │
+  │  Due Date*       │  ☐  Lab Report       MED   tomorrow  │
+  │  Priority ▼      │  ☑  ~~HW Chapter 3~~ LOW   done     │
+  │  [Add]           │                                      │
+  └──────────────────┴───────────────────────────────────────┘
+
+  Files:
+  server/models/Assignment.js   ← new
+  server/routes/assignments.js  ← new (CRUD)
+  server/index.js               ← edit
+  pages/deadlines.html          ← new
+  css/deadlines.css             ← new
+  js/deadlines.js               ← new
+
+  ---
+  File 1 of 6 — server/models/Assignment.js
+
+● Write(server\models\Assignment.js)
+  ⎿  Wrote 35 lines to server\models\Assignment.js
+       1 const mongoose = require('mongoose');
+       2 
+       3 const AssignmentSchema = new mongoose.Schema(
+       4   {
+       5     userId: {
+       6       type:     String,
+       7       required: [true, 'userId is required'],
+       8       index:    true,
+       9     },
+      10     title: {
+     … +25 lines (ctrl+o to expand)
+
+● File 2 of 6 — server/routes/assignments.js
+
+● Write(server\routes\assignments.js)
+  ⎿  Wrote 85 lines to server\routes\assignments.js
+       1 const express    = require('express');
+       2 const router     = express.Router();
+       3 const Assignment = require('../models/Assignment');
+       4 
+       5 // ── POST /api/assignments ──────────────────────────────────
+       6 // Create a new assignment.
+       7 router.post('/', async (req, res) => {
+       8   const { userId, title, dueDate, priority } = req.body;
+       9 
+      10   const errors = {};
+     … +75 lines (ctrl+o to expand)
+
+● Edit — server/index.js
+
+● Update(server\index.js)
+  ⎿  Added 2 lines, removed 1 line
+       3  const cors       = require('cors');
+       4  const connectDB  = require('./config/db');
+       5  const sessionRoutes = require('./routes/sessions');
+       6 -const eventRoutes   = require('./routes/events');              
+       6 +const eventRoutes        = require('./routes/events');         
+       7 +const assignmentRoutes   = require('./routes/assignments');    
+       8  
+       9  const app  = express();
+      10  const PORT = process.env.PORT || 5000;
+
+● Update(server\index.js)
+  ⎿  Added 2 lines, removed 1 line
+      23  
+      24  // ── Routes ─────────────────────────────────────────────────
+      25  app.use('/api/sessions', sessionRoutes);
+      26 -app.use('/api/events',   eventRoutes);                         
+      26 +app.use('/api/events',      eventRoutes);                      
+      27 +app.use('/api/assignments', assignmentRoutes);                 
+      28  
+      29  // ── 404 fallback ───────────────────────────────────────────
+      30  app.use((req, res) => {
+
+● File 3 of 6 — pages/deadlines.html
+
+● Write(pages\deadlines.html)
+  ⎿  Wrote 103 lines to pages\deadlines.html
+       1 <!DOCTYPE html>
+       2 <html lang="en">
+       3 <head>
+       4   <meta charset="UTF-8" />
+       5   <meta name="viewport" content="width=device-width, initial-sca
+         le=1.0" />
+       6   <title>Deadlines — Locked In Factory</title>
+       7   <link rel="stylesheet" href="../css/global.css" />
+       8   <link rel="stylesheet" href="../css/deadlines.css" />
+       9 </head>
+      10 <body>
+     … +93 lines (ctrl+o to expand)
+
+● File 4 of 6 — css/deadlines.css
+
+● Write(css\deadlines.css)
+  ⎿  Wrote 187 lines to css\deadlines.css
+       1 /* ============================================================
+       2    LOCKED IN FACTORY — Deadlines Page Styles
+       3    ============================================================ 
+         */
+       4 
+       5 .dl-page-header {
+       6   display: flex;
+       7   align-items: center;
+       8   justify-content: space-between;
+       9   flex-wrap: wrap;
+      10   gap: var(--space-3);
+     … +177 lines (ctrl+o to expand)
+
+● File 5 of 6 — js/deadlines.js
+
+● Write(js\deadlines.js)
+  ⎿  Wrote 309 lines to js\deadlines.js
+       1 /* ============================================================
+       2    LOCKED IN FACTORY — Deadlines JS
+       3    CRUD via API (MongoDB) with localStorage fallback.
+       4    Filter by status, sort by due date.
+       5    ============================================================ 
+         */
+       6 
+       7 const API_BASE = 'http://localhost:5000/api';
+       8 
+       9 // ── State ──────────────────────────────────────────────────
+      10 let allAssignments = [];
+     … +299 lines (ctrl+o to expand)
+
+● Step 6 complete.
+
+  ---
+  Step 6 Complete
+
+  server/models/Assignment.js   ✓  userId, title, dueDate, priority, status
+  server/routes/assignments.js  ✓  POST · GET · PATCH · DELETE
+  server/index.js               ✓  route mounted
+  pages/deadlines.html          ✓
+  css/deadlines.css             ✓
+  js/deadlines.js               ✓
+
+  ---
+  What's working
+
+  ┌────────────────┬────────────────────────────────────────────────────────┐
+  │    Feature     │                         Detail                         │
+  ├────────────────┼────────────────────────────────────────────────────────┤
+  │ Add form       │ Title (required), due date (required), priority        │
+  │                │ dropdown — inline validation errors                    │
+  ├────────────────┼────────────────────────────────────────────────────────┤
+  │ Complete       │ Toggles status between pending/completed — PATCH to    │
+  │ button         │ API, falls back to localStorage                        │
+  │                │ toggleAssignmentComplete()                             │
+  ├────────────────┼────────────────────────────────────────────────────────┤
+  │ Strikethrough  │ dl-item--completed class adds text-decoration:         │
+  │                │ line-through and fades the row                         │
+  ├────────────────┼────────────────────────────────────────────────────────┤
+  │ Delete         │ DELETE to API + removes from allAssignments state and  │
+  │                │ localStorage                                           │
+  ├────────────────┼────────────────────────────────────────────────────────┤
+  │ Filter tabs    │ All / Pending / Completed — filters allAssignments in  │
+  │                │ memory, no re-fetch                                    │
+  ├────────────────┼────────────────────────────────────────────────────────┤
+  │ Sort           │ Toggles ↑/↓ — sorts by dueDate string comparison       │
+  │                │ (YYYY-MM-DD sorts correctly as strings)                │
+  ├────────────────┼────────────────────────────────────────────────────────┤
+  │ Overdue badge  │ Shows count of pending assignments past due date in    │
+  │                │ the page header                                        │
+  ├────────────────┼────────────────────────────────────────────────────────┤
+  │ Priority       │ Left border: red = high, yellow = medium, green = low  │
+  │ colors         │                                                        │
+  ├────────────────┼────────────────────────────────────────────────────────┤
+  │ Offline        │ All operations fall through to storage.js helpers      │
+  │ fallback       │ (getAssignments, saveAssignment, etc.)                 │
+  └────────────────┴────────────────────────────────────────────────────────┘
+
+  ---
+  Ready for Step 7 — Flashcards?
+
+✻ Brewed for 2m 43s
+
+> Sure, ensure the same schema layout with respective variable names. create    
+API, and have UI show question and click to flip. add a next and previous       
+button. Keep it simple, no need to over engineer.                               
+
+● Files:
+  server/models/Flashcard.js   ← new
+  server/routes/flashcards.js  ← new
+  server/index.js              ← edit
+  pages/flashcards.html        ← new
+  css/flashcards.css           ← new
+  js/flashcards.js             ← new
+
+  ---
+  File 1 of 6 — server/models/Flashcard.js
+
+● Write(server\models\Flashcard.js)
+  ⎿  Wrote 32 lines to server\models\Flashcard.js
+       1 const mongoose = require('mongoose');
+       2 
+       3 const FlashcardSchema = new mongoose.Schema(
+       4   {
+       5     userId: {
+       6       type:     String,
+       7       required: [true, 'userId is required'],
+       8       index:    true,
+       9     },
+      10     deckName: {
+     … +22 lines (ctrl+o to expand)
+
+● File 2 of 6 — server/routes/flashcards.js
+
+● Write(server\routes\flashcards.js)
+  ⎿  Wrote 55 lines to server\routes\flashcards.js
+       1 const express   = require('express');
+       2 const router    = express.Router();
+       3 const Flashcard = require('../models/Flashcard');
+       4 
+       5 // ── POST /api/flashcards ───────────────────────────────────
+       6 router.post('/', async (req, res) => {
+       7   const { userId, deckName, question, answer } = req.body;
+       8 
+       9   const errors = {};
+      10   if (!userId)          errors.userId   = 'userId is required';
+     … +45 lines (ctrl+o to expand)
+
+● Edit — server/index.js
+
+● Update(server\index.js)
+  ⎿  Added 1 line
+       5  const sessionRoutes = require('./routes/sessions');
+       6  const eventRoutes        = require('./routes/events');
+       7  const assignmentRoutes   = require('./routes/assignments');
+       8 +const flashcardRoutes    = require('./routes/flashcards');     
+       9  
+      10  const app  = express();
+      11  const PORT = process.env.PORT || 5000;
+
+● Update(server\index.js)
+  ⎿  Added 1 line
+      26  app.use('/api/sessions', sessionRoutes);
+      27  app.use('/api/events',      eventRoutes);
+      28  app.use('/api/assignments', assignmentRoutes);
+      29 +app.use('/api/flashcards',  flashcardRoutes);                  
+      30  
+      31  // ── 404 fallback ───────────────────────────────────────────
+      32  app.use((req, res) => {
+
+● File 3 of 6 — pages/flashcards.html
+
+● Write(pages\flashcards.html)
+  ⎿  Wrote 138 lines to pages\flashcards.html
+       1 <!DOCTYPE html>
+       2 <html lang="en">
+       3 <head>
+       4   <meta charset="UTF-8" />
+       5   <meta name="viewport" content="width=device-width, initial-sca
+         le=1.0" />
+       6   <title>Flashcards — Locked In Factory</title>
+       7   <link rel="stylesheet" href="../css/global.css" />
+       8   <link rel="stylesheet" href="../css/flashcards.css" />
+       9 </head>
+      10 <body>
+     … +128 lines (ctrl+o to expand)
+
+● File 4 of 6 — css/flashcards.css
+
+● Write(css\flashcards.css)
+  ⎿  Wrote 213 lines to css\flashcards.css
+       1 /* ============================================================
+       2    LOCKED IN FACTORY — Flashcards Styles
+       3    ============================================================ 
+         */
+       4 
+       5 .required-star { color: var(--color-danger); }
+       6 .field-error {
+       7   display: block;
+       8   font-size: var(--text-xs);
+       9   color: var(--color-danger);
+      10   margin-top: var(--space-1);
+     … +203 lines (ctrl+o to expand)
+
+● File 5 of 6 — js/flashcards.js
+
+● Write(js\flashcards.js)
+  ⎿  Wrote 281 lines to js\flashcards.js
+       1 /* ============================================================
+       2    LOCKED IN FACTORY — Flashcards JS
+       3    ============================================================ 
+         */
+       4 
+       5 const API_BASE  = 'http://localhost:5000/api';
+       6 const LOCAL_KEY = 'sp_flashcards';
+       7 
+       8 // ── State ──────────────────────────────────────────────────
+       9 let allCards     = [];   // all cards from API / localStorage
+      10 let currentDeck  = [];   // cards in the selected deck
+     … +271 lines (ctrl+o to expand)
+
+● Step 7 complete.
+
+  ---
+  Step 7 Complete
+
+  server/models/Flashcard.js   ✓  userId, deckName, question, answer
+  server/routes/flashcards.js  ✓  POST · GET · DELETE
+  server/index.js              ✓  route mounted
+  pages/flashcards.html        ✓
+  css/flashcards.css           ✓
+  js/flashcards.js             ✓
+
+  ---
+  How it works
+
+  ┌───────────────┬─────────────────────────────────────────────────────────┐
+  │    Feature    │                         Detail                          │
+  ├───────────────┼─────────────────────────────────────────────────────────┤
+  │ Decks         │ Grouped from cards by deckName — no separate deck model │
+  │               │  needed                                                 │
+  ├───────────────┼─────────────────────────────────────────────────────────┤
+  │ Flip          │ CSS 3D rotateY(180deg) on .flip-card__inner — front is  │
+  │               │ dark purple, back is white                              │
+  ├───────────────┼─────────────────────────────────────────────────────────┤
+  │ Prev / Next   │ Disabled at boundaries, resets flip to question side on │
+  │               │  navigation                                             │
+  ├───────────────┼─────────────────────────────────────────────────────────┤
+  │ Delete card   │ Removes from API + local state, auto-navigates if deck  │
+  │               │ becomes empty                                           │
+  ├───────────────┼─────────────────────────────────────────────────────────┤
+  │ Keyboard      │ Space = flip, → = next, ← = prev (ignored when typing   │
+  │               │ in form)                                                │
+  ├───────────────┼─────────────────────────────────────────────────────────┤
+  │ Offline       │ Saves to sp_flashcards in localStorage                  │
+  │ fallback      │                                                         │
+  ├───────────────┼─────────────────────────────────────────────────────────┤
+  │ Validation    │ All three fields required — inline errors, cleared on   │
+  │               │ input                                                   │
+  └───────────────┴─────────────────────────────────────────────────────────┘
+
+  ---
+  Full Project Complete
+
+  All 7 features are built. Here's the final file map:
+
+  midterm/
+  ├── index.html               Dashboard
+  ├── pages/
+  │   ├── session.html         Study Session
+  │   ├── pomodoro.html        Pomodoro Timer
+  │   ├── calendar.html        Calendar
+  │   ├── deadlines.html       Deadline Tracker
+  │   └── flashcards.html      Flashcards
+  ├── css/
+  │   ├── global.css · dashboard.css · session.css
+  │   ├── pomodoro.css · calendar.css
+  │   ├── deadlines.css · flashcards.css
+  ├── js/
+  │   ├── storage.js · utils.js · dashboard.js
+  │   ├── session.js · pomodoro.js · calendar.js
+  │   ├── deadlines.js · flashcards.js
+  └── server/
+      ├── index.js
+      ├── config/db.js
+      ├── models/  Session · Event · Assignment · Flashcard
+      └── routes/  sessions · events · assignments · flashcards
+
+  Run with npm install then npm run dev.
+
+✻ Cooked for 3m 33s

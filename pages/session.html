@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Study Session — Locked In Factory</title>
+  <link rel="stylesheet" href="../css/global.css" />
+  <link rel="stylesheet" href="../css/session.css" />
+</head>
+<body>
+
+  <!-- ── Navbar ─────────────────────────────────────────── -->
+  <nav class="navbar">
+    <a class="navbar__brand" href="../index.html">Locked In Factory</a>
+    <ul class="navbar__links">
+      <li><a class="navbar__link" href="../index.html"><span class="navbar__link-icon">🏠</span> Dashboard</a></li>
+      <li><a class="navbar__link" href="./session.html"><span class="navbar__link-icon">📚</span> Study Session</a></li>
+      <li><a class="navbar__link" href="./pomodoro.html"><span class="navbar__link-icon">🍅</span> Pomodoro</a></li>
+      <li><a class="navbar__link" href="./calendar.html"><span class="navbar__link-icon">📅</span> Calendar</a></li>
+      <li><a class="navbar__link" href="./deadlines.html"><span class="navbar__link-icon">⚠️</span> Deadlines</a></li>
+      <li><a class="navbar__link" href="./flashcards.html"><span class="navbar__link-icon">🃏</span> Flashcards</a></li>
+    </ul>
+    <button class="navbar__toggle" id="nav-toggle" aria-label="Toggle navigation">☰</button>
+  </nav>
+
+  <!-- ══════════════════════════════════════════════════════
+       IDLE STATE — shown when no session is active
+  ═══════════════════════════════════════════════════════════ -->
+  <main class="page-wrapper" id="idle-view">
+
+    <!-- API status banner -->
+    <div class="api-banner hidden" id="api-banner">
+      <span id="api-banner-text"></span>
+    </div>
+
+    <header class="page-header">
+      <h1 class="page-header__title">Study Session</h1>
+      <p class="page-header__subtitle">Log a focused study block and track your time.</p>
+    </header>
+
+    <div class="session-layout">
+
+      <!-- ── Start Session Card ─────────────────────────── -->
+      <div class="card card--elevated start-card">
+        <h2 class="card__title">Start a New Session</h2>
+
+        <div class="flex-col gap-4">
+
+          <div class="form-group">
+            <label class="form-label" for="subject-select">Subject</label>
+            <select class="form-select" id="subject-select">
+              <option value="">— Select subject —</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="session-notes-pre">Notes <span class="text-subtle">(optional)</span></label>
+            <textarea
+              class="form-textarea"
+              id="session-notes-pre"
+              placeholder="What are you planning to study?"
+              rows="3"
+            ></textarea>
+          </div>
+
+        </div>
+
+        <button class="btn btn--primary btn--lg w-full" id="start-btn" style="margin-top: var(--space-6);">
+          ▶ Start Session
+        </button>
+
+        <p class="no-subjects-msg hidden text-subtle text-sm text-center" id="no-subjects-msg" style="margin-top: var(--space-3);">
+          No subjects found.
+          <a href="../index.html" style="color: var(--color-teal); text-decoration: underline;">Add one from the dashboard →</a>
+        </p>
+      </div>
+
+      <!-- ── Recent Sessions Card ───────────────────────── -->
+      <div class="card recent-sessions-card">
+        <div class="widget-header" style="margin-bottom: var(--space-5);">
+          <h2 class="card__title" style="margin-bottom:0;">Recent Sessions</h2>
+          <span class="text-subtle text-sm" id="sessions-count"></span>
+        </div>
+
+        <ul class="recent-list" id="recent-list">
+          <!-- Rendered by JS -->
+        </ul>
+
+        <div class="empty-state hidden" id="recent-empty">
+          <div class="empty-state__icon">📖</div>
+          <p class="empty-state__title">No sessions yet</p>
+          <p class="empty-state__text">Start your first session to see it here.</p>
+        </div>
+
+        <button class="btn btn--ghost btn--sm w-full hidden" id="load-more-btn" style="margin-top: var(--space-4);">
+          Load more
+        </button>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- ══════════════════════════════════════════════════════
+       ACTIVE SESSION STATE — shown when session is running
+       Body gets class "session-active" for dark mode
+  ═══════════════════════════════════════════════════════════ -->
+  <div class="focus-overlay hidden" id="active-view">
+
+    <!-- Top bar during session -->
+    <div class="focus-topbar">
+      <span class="focus-brand">Locked In Factory</span>
+      <div class="focus-status">
+        <span class="active-dot"></span>
+        <span>Session in progress</span>
+      </div>
+      <button class="focus-minimize-btn" id="minimize-btn" title="Minimize to corner">
+        <span>—</span> Minimize
+      </button>
+    </div>
+
+    <!-- Subject badge -->
+    <div class="focus-subject" id="focus-subject-badge">
+      <span class="focus-subject__icon" id="focus-subject-icon">📚</span>
+      <span class="focus-subject__name" id="focus-subject-name">General</span>
+    </div>
+
+    <!-- Timer -->
+    <div class="focus-timer-wrap">
+      <div class="focus-timer" id="focus-timer">00:00:00</div>
+      <p class="focus-timer__label">elapsed</p>
+    </div>
+
+    <!-- In-session notes -->
+    <div class="focus-notes-wrap">
+      <textarea
+        class="focus-notes"
+        id="session-notes-active"
+        placeholder="Add notes during your session..."
+        rows="3"
+      ></textarea>
+    </div>
+
+    <!-- End session button -->
+    <button class="btn btn--end-session" id="end-btn">
+      ■ End Session
+    </button>
+
+    <!-- ── End Confirmation Panel (slides in) ────────────── -->
+    <div class="end-panel hidden" id="end-panel">
+      <div class="end-panel__card">
+        <h3 class="end-panel__title">Wrap up your session</h3>
+
+        <div class="end-panel__duration" id="end-panel-duration">
+          You studied for <strong id="end-duration-display">—</strong>
+        </div>
+
+        <div class="form-group" style="margin-bottom: var(--space-4);">
+          <label class="form-label" style="color: var(--color-teal-pale);">How was your focus?</label>
+          <div class="mood-selector" id="mood-selector">
+            <button class="mood-btn" data-mood="focused"   aria-pressed="false">😊 Focused</button>
+            <button class="mood-btn" data-mood="neutral"   aria-pressed="false">😐 Neutral</button>
+            <button class="mood-btn" data-mood="distracted" aria-pressed="false">😵 Distracted</button>
+          </div>
+        </div>
+
+        <div class="end-panel__actions">
+          <button class="btn btn--ghost" id="cancel-end-btn" style="color: var(--color-neutral-light); border-color: var(--color-primary-light);">
+            Keep Going
+          </button>
+          <button class="btn btn--end-confirm" id="confirm-end-btn">
+            ✓ Save & Finish
+          </button>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /focus-overlay -->
+
+  <script src="../js/storage.js"></script>
+  <script src="../js/utils.js"></script>
+  <script src="../js/session.js"></script>
+</body>
+</html>

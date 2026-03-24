@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Flashcards — Locked In Factory</title>
+  <link rel="stylesheet" href="../css/global.css" />
+  <link rel="stylesheet" href="../css/flashcards.css" />
+</head>
+<body>
+
+  <nav class="navbar">
+    <a class="navbar__brand" href="../index.html">Locked In Factory</a>
+    <ul class="navbar__links">
+      <li><a class="navbar__link" href="../index.html"><span class="navbar__link-icon">🏠</span> Dashboard</a></li>
+      <li><a class="navbar__link" href="./session.html"><span class="navbar__link-icon">📚</span> Study Session</a></li>
+      <li><a class="navbar__link" href="./pomodoro.html"><span class="navbar__link-icon">🍅</span> Pomodoro</a></li>
+      <li><a class="navbar__link" href="./calendar.html"><span class="navbar__link-icon">📅</span> Calendar</a></li>
+      <li><a class="navbar__link" href="./deadlines.html"><span class="navbar__link-icon">⚠️</span> Deadlines</a></li>
+      <li><a class="navbar__link" href="./flashcards.html"><span class="navbar__link-icon">🃏</span> Flashcards</a></li>
+    </ul>
+    <button class="navbar__toggle" id="nav-toggle" aria-label="Toggle navigation">☰</button>
+  </nav>
+
+  <main class="page-wrapper">
+
+    <header class="page-header">
+      <h1 class="page-header__title">Flashcards</h1>
+      <p class="page-header__subtitle">Create decks and review your cards.</p>
+    </header>
+
+    <div class="fc-layout">
+
+      <!-- ── Left: Decks + Add Form ──────────────────────── -->
+      <aside class="fc-sidebar">
+
+        <!-- Deck list -->
+        <div class="card fc-decks-card">
+          <h2 class="card__title">Your Decks</h2>
+          <ul class="deck-list" id="deck-list">
+            <!-- Rendered by JS -->
+          </ul>
+          <p class="empty-state__text text-subtle text-sm hidden" id="deck-empty">
+            No decks yet. Add a card below to create one.
+          </p>
+        </div>
+
+        <!-- Add card form -->
+        <div class="card">
+          <h2 class="card__title">Add Card</h2>
+          <div class="flex-col gap-4">
+
+            <div class="form-group">
+              <label class="form-label" for="fc-deck">Deck Name <span class="required-star">*</span></label>
+              <input class="form-input" type="text" id="fc-deck" placeholder="e.g. Biology" maxlength="60" />
+              <span class="field-error hidden" id="fc-deck-error"></span>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="fc-question">Question <span class="required-star">*</span></label>
+              <textarea class="form-textarea" id="fc-question" placeholder="Front of card..." rows="2" maxlength="500"></textarea>
+              <span class="field-error hidden" id="fc-question-error"></span>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="fc-answer">Answer <span class="required-star">*</span></label>
+              <textarea class="form-textarea" id="fc-answer" placeholder="Back of card..." rows="2" maxlength="500"></textarea>
+              <span class="field-error hidden" id="fc-answer-error"></span>
+            </div>
+
+          </div>
+          <button class="btn btn--primary w-full" id="add-card-btn" style="margin-top:var(--space-5);">
+            + Add Card
+          </button>
+        </div>
+
+      </aside>
+
+      <!-- ── Right: Review Area ───────────────────────────── -->
+      <section class="fc-review">
+
+        <!-- No deck selected -->
+        <div class="empty-state" id="review-empty">
+          <div class="empty-state__icon">🃏</div>
+          <p class="empty-state__title">Select a deck to start</p>
+          <p class="empty-state__text">Choose a deck on the left to review its cards.</p>
+        </div>
+
+        <!-- Active review -->
+        <div class="fc-review-active hidden" id="review-active">
+
+          <div class="fc-review-header">
+            <h2 class="fc-deck-title" id="review-deck-name">Deck</h2>
+            <span class="text-subtle text-sm" id="review-count"></span>
+          </div>
+
+          <!-- Flip card -->
+          <div class="flip-card" id="flip-card" role="button" tabindex="0"
+               aria-label="Click to flip card" title="Click to flip">
+            <div class="flip-card__inner" id="flip-inner">
+              <div class="flip-card__front">
+                <span class="fc-side-label">Question</span>
+                <p class="fc-card-text" id="card-question"></p>
+              </div>
+              <div class="flip-card__back">
+                <span class="fc-side-label">Answer</span>
+                <p class="fc-card-text" id="card-answer"></p>
+              </div>
+            </div>
+          </div>
+
+          <p class="fc-flip-hint" id="flip-hint">Click card to reveal answer</p>
+
+          <!-- Navigation -->
+          <div class="fc-nav">
+            <button class="btn btn--secondary" id="prev-btn">← Prev</button>
+            <span class="fc-progress" id="fc-progress">1 / 5</span>
+            <button class="btn btn--primary" id="next-btn">Next →</button>
+          </div>
+
+          <!-- Delete current card -->
+          <button class="btn btn--ghost btn--sm fc-delete-btn" id="delete-card-btn">
+            🗑 Delete this card
+          </button>
+
+        </div>
+
+      </section>
+
+    </div>
+
+  </main>
+
+  <script src="../js/storage.js"></script>
+  <script src="../js/utils.js"></script>
+  <script src="../js/flashcards.js"></script>
+</body>
+</html>

@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Deadlines — Locked In Factory</title>
+  <link rel="stylesheet" href="../css/global.css" />
+  <link rel="stylesheet" href="../css/deadlines.css" />
+</head>
+<body>
+
+  <nav class="navbar">
+    <a class="navbar__brand" href="../index.html">Locked In Factory</a>
+    <ul class="navbar__links">
+      <li><a class="navbar__link" href="../index.html"><span class="navbar__link-icon">🏠</span> Dashboard</a></li>
+      <li><a class="navbar__link" href="./session.html"><span class="navbar__link-icon">📚</span> Study Session</a></li>
+      <li><a class="navbar__link" href="./pomodoro.html"><span class="navbar__link-icon">🍅</span> Pomodoro</a></li>
+      <li><a class="navbar__link" href="./calendar.html"><span class="navbar__link-icon">📅</span> Calendar</a></li>
+      <li><a class="navbar__link" href="./deadlines.html"><span class="navbar__link-icon">⚠️</span> Deadlines</a></li>
+      <li><a class="navbar__link" href="./flashcards.html"><span class="navbar__link-icon">🃏</span> Flashcards</a></li>
+    </ul>
+    <button class="navbar__toggle" id="nav-toggle" aria-label="Toggle navigation">☰</button>
+  </nav>
+
+  <main class="page-wrapper">
+
+    <header class="page-header dl-page-header">
+      <div>
+        <h1 class="page-header__title">Deadlines</h1>
+        <p class="page-header__subtitle">Track assignments and due dates.</p>
+      </div>
+      <span class="badge badge--red hidden" id="overdue-badge"></span>
+    </header>
+
+    <div class="dl-layout">
+
+      <!-- ── Add Form ──────────────────────────────────── -->
+      <aside class="card dl-form-card">
+        <h2 class="card__title">Add Assignment</h2>
+
+        <div class="flex-col gap-4">
+          <div class="form-group">
+            <label class="form-label" for="dl-title">Title <span class="required-star">*</span></label>
+            <input class="form-input" type="text" id="dl-title" placeholder="e.g. Essay draft" maxlength="100" />
+            <span class="field-error hidden" id="dl-title-error"></span>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="dl-date">Due Date <span class="required-star">*</span></label>
+            <input class="form-input" type="date" id="dl-date" />
+            <span class="field-error hidden" id="dl-date-error"></span>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="dl-priority">Priority</label>
+            <select class="form-select" id="dl-priority">
+              <option value="high">🔴 High</option>
+              <option value="medium" selected>🟡 Medium</option>
+              <option value="low">🟢 Low</option>
+            </select>
+          </div>
+        </div>
+
+        <button class="btn btn--primary w-full" id="add-dl-btn" style="margin-top: var(--space-5);">
+          + Add Assignment
+        </button>
+      </aside>
+
+      <!-- ── List ─────────────────────────────────────── -->
+      <section class="dl-list-section">
+
+        <!-- Filters + Sort -->
+        <div class="dl-controls">
+          <div class="filter-tabs" role="tablist">
+            <button class="filter-tab filter-tab--active" data-filter="all">All</button>
+            <button class="filter-tab" data-filter="pending">Pending</button>
+            <button class="filter-tab" data-filter="completed">Completed</button>
+          </div>
+          <button class="btn btn--ghost btn--sm" id="sort-btn" title="Sort by due date">
+            ↕ Date <span id="sort-icon">↑</span>
+          </button>
+        </div>
+
+        <!-- Assignment list -->
+        <ul class="dl-list" id="dl-list"></ul>
+
+        <!-- Empty state -->
+        <div class="empty-state hidden" id="dl-empty">
+          <div class="empty-state__icon">✅</div>
+          <p class="empty-state__title">Nothing here</p>
+          <p class="empty-state__text">Add an assignment using the form.</p>
+        </div>
+
+      </section>
+    </div>
+
+  </main>
+
+  <script src="../js/storage.js"></script>
+  <script src="../js/utils.js"></script>
+  <script src="../js/deadlines.js"></script>
+</body>
+</html>

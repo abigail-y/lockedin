@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Calendar — Locked In Factory</title>
+  <link rel="stylesheet" href="../css/global.css" />
+  <link rel="stylesheet" href="../css/calendar.css" />
+</head>
+<body>
+
+  <!-- ── Navbar ─────────────────────────────────────────── -->
+  <nav class="navbar">
+    <a class="navbar__brand" href="../index.html">Locked In Factory</a>
+    <ul class="navbar__links">
+      <li><a class="navbar__link" href="../index.html"><span class="navbar__link-icon">🏠</span> Dashboard</a></li>
+      <li><a class="navbar__link" href="./session.html"><span class="navbar__link-icon">📚</span> Study Session</a></li>
+      <li><a class="navbar__link" href="./pomodoro.html"><span class="navbar__link-icon">🍅</span> Pomodoro</a></li>
+      <li><a class="navbar__link" href="./calendar.html"><span class="navbar__link-icon">📅</span> Calendar</a></li>
+      <li><a class="navbar__link" href="./deadlines.html"><span class="navbar__link-icon">⚠️</span> Deadlines</a></li>
+      <li><a class="navbar__link" href="./flashcards.html"><span class="navbar__link-icon">🃏</span> Flashcards</a></li>
+    </ul>
+    <button class="navbar__toggle" id="nav-toggle" aria-label="Toggle navigation">☰</button>
+  </nav>
+
+  <main class="page-wrapper">
+
+    <!-- Page Header -->
+    <header class="page-header cal-page-header">
+      <div>
+        <h1 class="page-header__title">Calendar</h1>
+        <p class="page-header__subtitle">Plan events and track assignment deadlines.</p>
+      </div>
+      <button class="btn btn--primary" id="add-event-btn">+ Add Event</button>
+    </header>
+
+    <!-- API status banner -->
+    <div class="api-banner hidden" id="api-banner">
+      <span id="api-banner-text"></span>
+    </div>
+
+    <!-- ── Main Layout ──────────────────────────────────── -->
+    <div class="cal-layout">
+
+      <!-- ── Calendar Grid (left) ───────────────────────── -->
+      <section class="cal-main card" aria-label="Monthly calendar">
+
+        <!-- Month navigation -->
+        <div class="cal-nav">
+          <button class="cal-nav__btn" id="prev-month" aria-label="Previous month">‹</button>
+          <h2 class="cal-nav__heading" id="cal-month-heading">March 2026</h2>
+          <button class="cal-nav__btn" id="next-month" aria-label="Next month">›</button>
+        </div>
+
+        <!-- Weekday headers -->
+        <div class="cal-grid cal-grid--header">
+          <div class="cal-weekday">Mon</div>
+          <div class="cal-weekday">Tue</div>
+          <div class="cal-weekday">Wed</div>
+          <div class="cal-weekday">Thu</div>
+          <div class="cal-weekday">Fri</div>
+          <div class="cal-weekday">Sat</div>
+          <div class="cal-weekday">Sun</div>
+        </div>
+
+        <!-- Day cells — rendered by JS -->
+        <div class="cal-grid cal-grid--days" id="cal-grid" role="grid">
+          <!-- Populated by renderCalendar() -->
+        </div>
+
+      </section>
+
+      <!-- ── Day Panel (right) ──────────────────────────── -->
+      <aside class="day-panel card" id="day-panel" aria-label="Selected day events">
+
+        <div class="day-panel__header">
+          <div>
+            <h3 class="day-panel__date" id="day-panel-date">Select a day</h3>
+            <p class="day-panel__count text-subtle text-xs" id="day-panel-count"></p>
+          </div>
+          <button class="btn btn--teal btn--sm hidden" id="day-add-btn">+ Add</button>
+        </div>
+
+        <hr class="divider" />
+
+        <!-- Events list for selected day -->
+        <ul class="day-events-list" id="day-events-list">
+          <!-- Rendered by JS -->
+        </ul>
+
+        <!-- Empty state -->
+        <div class="empty-state" id="day-empty">
+          <div class="empty-state__icon">📭</div>
+          <p class="empty-state__title">Nothing here yet</p>
+          <p class="empty-state__text">Click a day then add an event.</p>
+        </div>
+
+      </aside>
+
+    </div><!-- /cal-layout -->
+
+  </main>
+
+  <!-- ── Add Event Modal ────────────────────────────────── -->
+  <div class="modal-overlay" id="add-event-modal" aria-modal="true" role="dialog" aria-labelledby="modal-title">
+    <div class="modal">
+
+      <div class="modal__header">
+        <h2 class="modal__title" id="modal-title">Add Event</h2>
+        <button class="modal__close" data-close="add-event-modal" aria-label="Close">✕</button>
+      </div>
+
+      <div class="flex-col gap-4">
+
+        <!-- Title -->
+        <div class="form-group">
+          <label class="form-label" for="event-title">
+            Title <span class="required-star">*</span>
+          </label>
+          <input
+            class="form-input"
+            type="text"
+            id="event-title"
+            placeholder="e.g. Study group meeting"
+            maxlength="100"
+            autocomplete="off"
+          />
+          <span class="field-error hidden" id="title-error" role="alert"></span>
+          <span class="form-hint">Max 100 characters</span>
+        </div>
+
+        <!-- Date -->
+        <div class="form-group">
+          <label class="form-label" for="event-date">
+            Date <span class="required-star">*</span>
+          </label>
+          <input
+            class="form-input"
+            type="date"
+            id="event-date"
+          />
+          <span class="field-error hidden" id="date-error" role="alert"></span>
+        </div>
+
+        <!-- Description -->
+        <div class="form-group">
+          <label class="form-label" for="event-description">
+            Description <span class="text-subtle">(optional)</span>
+          </label>
+          <textarea
+            class="form-textarea"
+            id="event-description"
+            placeholder="Add any notes or details..."
+            maxlength="500"
+            rows="3"
+          ></textarea>
+          <span class="field-error hidden" id="desc-error" role="alert"></span>
+          <span class="form-hint" id="desc-char-count">0 / 500</span>
+        </div>
+
+      </div>
+
+      <div class="modal__footer">
+        <button class="btn btn--secondary" data-close="add-event-modal">Cancel</button>
+        <button class="btn btn--primary" id="save-event-btn">Save Event</button>
+      </div>
+
+    </div>
+  </div>
+
+  <script src="../js/storage.js"></script>
+  <script src="../js/utils.js"></script>
+  <script src="../js/calendar.js"></script>
+</body>
+</html>

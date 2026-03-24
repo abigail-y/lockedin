@@ -26,3 +26,5 @@ CSS – Styling and responsive design
 JavaScript – Interactive functionality for task management and scheduling
 
 Git & GitHub – Version control and project hosting
+
+What I learned is that using the feature - tasks- prompt pipeline is the best way for me to go about using Claude effectivley. I made sure to be specific and to do everything step-by-step so I knew what Claude was writing and implementing into my project. I found out that setting out what I expect Claude to do in the beginning by listing the main features I want and how to go about each one makes it a smoother process. 

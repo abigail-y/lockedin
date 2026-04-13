@@ -6,6 +6,7 @@
   <title>Deadlines — Locked In Factory</title>
   <link rel="stylesheet" href="../css/global.css" />
   <link rel="stylesheet" href="../css/deadlines.css" />
+  <link rel="stylesheet" href="../css/auth.css" />
 </head>
 <body>
 
@@ -19,6 +20,10 @@
       <li><a class="navbar__link" href="./deadlines.html"><span class="navbar__link-icon">⚠️</span> Deadlines</a></li>
       <li><a class="navbar__link" href="./flashcards.html"><span class="navbar__link-icon">🃏</span> Flashcards</a></li>
     </ul>
+    <div class="navbar__auth">
+      <span class="navbar__user-email" id="navbar-user-email"></span>
+      <button class="btn btn--sm btn--ghost" id="navbar-logout-btn" style="color:var(--color-neutral-light);border-color:var(--color-primary-light);">Log Out</button>
+    </div>
     <button class="navbar__toggle" id="nav-toggle" aria-label="Toggle navigation">☰</button>
   </nav>
 
@@ -96,6 +101,9 @@
 
   </main>
 
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+  <script src="../js/supabase-config.js"></script>
+  <script src="../js/auth.js"></script>
   <script src="../js/storage.js"></script>
   <script src="../js/utils.js"></script>
   <script src="../js/deadlines.js"></script>

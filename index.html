@@ -6,6 +6,7 @@
   <title>Locked In Factory</title>
   <link rel="stylesheet" href="./css/global.css" />
   <link rel="stylesheet" href="./css/dashboard.css" />
+  <link rel="stylesheet" href="./css/auth.css" />
 </head>
 <body>
 
@@ -46,7 +47,7 @@
       </li>
     </ul>
 
-    <!-- Profile -->
+    <!-- Profile + Auth -->
     <div class="navbar__profile">
       <button class="navbar__profile-btn" id="profile-btn" aria-expanded="false">
         <span class="navbar__profile-avatar" aria-hidden="true">👤</span>
@@ -54,9 +55,13 @@
         <span class="navbar__profile-caret" aria-hidden="true">▾</span>
       </button>
       <div class="navbar__profile-dropdown" id="profile-dropdown" aria-hidden="true">
+        <div class="dropdown-email" id="navbar-user-email" style="font-size:var(--text-xs);color:var(--color-text-subtle);padding:var(--space-2) var(--space-4);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:200px;"></div>
+        <hr class="dropdown-divider" />
         <button class="dropdown-item" id="edit-name-btn">✏️ Edit Name</button>
         <hr class="dropdown-divider" />
         <button class="dropdown-item dropdown-item--danger" id="clear-data-btn">🗑️ Clear All Data</button>
+        <hr class="dropdown-divider" />
+        <button class="dropdown-item dropdown-item--danger" id="navbar-logout-btn">🔒 Log Out</button>
       </div>
     </div>
 
@@ -312,6 +317,75 @@
       </div>
     </div>
   </div>
+
+  <!-- ── Auth Gate Overlay ──────────────────────────────────
+       Starts as is-open. Shows a spinner while the session
+       check runs. auth.js either hides the overlay (logged in)
+       or swaps the spinner for the login form (logged out).
+  ─────────────────────────────────────────────────────────── -->
+  <div class="auth-overlay is-open" id="auth-overlay" role="dialog" aria-modal="true" aria-label="Sign in to Locked In Factory">
+
+    <!-- Loading state: visible while session check is in flight -->
+    <div class="auth-loading" id="auth-loading">
+      <div class="auth-spinner"></div>
+    </div>
+
+    <!-- Auth card: hidden until we know user is NOT logged in -->
+    <div class="auth-card hidden" id="auth-card">
+
+      <div class="auth-card__header">
+        <div class="auth-card__lock">🔒</div>
+        <h1 class="auth-card__brand">Locked In Factory</h1>
+        <p class="auth-card__tagline">Sign in to access your study dashboard</p>
+      </div>
+
+      <!-- Tabs -->
+      <div class="auth-tabs" role="tablist">
+        <button class="auth-tab auth-tab--active" id="auth-tab-login" role="tab" aria-selected="true">Log In</button>
+        <button class="auth-tab" id="auth-tab-signup" role="tab" aria-selected="false">Sign Up</button>
+      </div>
+
+      <!-- Error / success messages -->
+      <div class="auth-message auth-message--error hidden" id="auth-error" role="alert"></div>
+      <div class="auth-message auth-message--success hidden" id="auth-success" role="status"></div>
+
+      <!-- Login form -->
+      <form class="auth-form" id="auth-form-login" novalidate>
+        <div class="form-group">
+          <label class="form-label" for="login-email">Email</label>
+          <input class="form-input" type="email" id="login-email" placeholder="you@example.com" autocomplete="email" required />
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="login-password">Password</label>
+          <input class="form-input" type="password" id="login-password" placeholder="••••••••" autocomplete="current-password" required />
+        </div>
+        <button class="btn btn--primary w-full" type="submit" id="login-btn">Log In</button>
+      </form>
+
+      <!-- Sign-up form (hidden by default) -->
+      <form class="auth-form hidden" id="auth-form-signup" novalidate>
+        <div class="form-group">
+          <label class="form-label" for="signup-email">Email</label>
+          <input class="form-input" type="email" id="signup-email" placeholder="you@example.com" autocomplete="email" required />
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="signup-password">Password</label>
+          <input class="form-input" type="password" id="signup-password" placeholder="Min. 6 characters" autocomplete="new-password" required />
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="signup-confirm">Confirm Password</label>
+          <input class="form-input" type="password" id="signup-confirm" placeholder="••••••••" autocomplete="new-password" required />
+        </div>
+        <button class="btn btn--primary w-full" type="submit" id="signup-btn">Create Account</button>
+      </form>
+
+    </div>
+  </div>
+
+  <!-- Supabase JS SDK (CDN) — must load before supabase-config and auth -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+  <script src="./js/supabase-config.js"></script>
+  <script src="./js/auth.js"></script>
 
   <script src="./js/storage.js"></script>
   <script src="./js/utils.js"></script>

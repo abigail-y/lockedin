@@ -12,6 +12,39 @@
      sp_settings    — single Settings object
    ============================================================ */
 
+// ── User-scoped storage prefix ─────────────────────────────
+// Reads the Supabase session synchronously from localStorage so
+// every key is namespaced to the logged-in user's ID.
+// supabase-config.js must load before storage.js.
+
+function _resolveUserPrefix() {
+  try {
+    const match = typeof SUPABASE_URL !== 'undefined'
+      ? SUPABASE_URL.match(/https?:\/\/([^.]+)\.supabase\.co/)
+      : null;
+    if (!match) return '';
+    const raw = localStorage.getItem(`sb-${match[1]}-auth-token`);
+    if (!raw) return '';
+    const uid = JSON.parse(raw)?.user?.id;
+    return uid ? uid + '_' : '';
+  } catch {
+    return '';
+  }
+}
+
+let _storagePrefix = _resolveUserPrefix();
+
+/** Namespace key under the current user. */
+function _key(k) { return _storagePrefix + k; }
+
+/**
+ * Called by auth.js when the Supabase session changes at runtime
+ * (e.g. login while page is open). Pass null/undefined to clear.
+ */
+function setStorageUser(uid) {
+  _storagePrefix = uid ? uid + '_' : '';
+}
+
 // ── Generic Helpers ────────────────────────────────────────
 
 /**
@@ -20,7 +53,7 @@
  */
 function getAll(key) {
   try {
-    return JSON.parse(localStorage.getItem(key)) || [];
+    return JSON.parse(localStorage.getItem(_key(key))) || [];
   } catch {
     return [];
   }
@@ -30,7 +63,7 @@ function getAll(key) {
  * Write an array (or any value) to localStorage.
  */
 function saveAll(key, data) {
-  localStorage.setItem(key, JSON.stringify(data));
+  localStorage.setItem(_key(key), JSON.stringify(data));
 }
 
 /**
@@ -39,7 +72,7 @@ function saveAll(key, data) {
  */
 function getObject(key, defaultValue = {}) {
   try {
-    const raw = localStorage.getItem(key);
+    const raw = localStorage.getItem(_key(key));
     return raw ? JSON.parse(raw) : defaultValue;
   } catch {
     return defaultValue;
@@ -357,7 +390,7 @@ function getGoals() {
 }
 
 function saveGoals(goals) {
-  localStorage.setItem('sp_goals', JSON.stringify(goals));
+  saveAll('sp_goals', goals);
 }
 
 // ── Settings ───────────────────────────────────────────────
@@ -374,7 +407,7 @@ function getSettings() {
 }
 
 function saveSettings(settings) {
-  localStorage.setItem('sp_settings', JSON.stringify(settings));
+  saveAll('sp_settings', settings);
 }
 
 // ── Computed Stats (not stored, derived at runtime) ────────
@@ -452,7 +485,7 @@ function getWeeklySubjectBreakdown() {
  */
 function getActiveSession() {
   try {
-    const raw = localStorage.getItem('sp_active_session');
+    const raw = localStorage.getItem(_key('sp_active_session'));
     return raw ? JSON.parse(raw) : null;
   } catch {
     return null;
@@ -463,7 +496,7 @@ function getActiveSession() {
  * Clear the active session from localStorage.
  */
 function clearActiveSession() {
-  localStorage.removeItem('sp_active_session');
+  localStorage.removeItem(_key('sp_active_session'));
 }
 
 // ── Date Helpers (used internally by storage.js) ───────────

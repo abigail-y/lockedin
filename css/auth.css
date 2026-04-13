@@ -1,0 +1,187 @@
+/* ============================================================
+   LOCKED IN FACTORY — Auth Overlay Styles
+   Blocking login / sign-up gate shown on the homepage before
+   the user authenticates. Uses design tokens from global.css.
+   ============================================================ */
+
+/* ── Full-page blocking overlay ─────────────────────────────── */
+.auth-overlay {
+  position: fixed;
+  inset: 0;
+  background: linear-gradient(
+    135deg,
+    var(--color-primary) 0%,
+    #1a1035 60%,
+    #0e2a20 100%
+  );
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 999;          /* above navbar (z:100) and modals (z:200) */
+  padding: var(--space-4);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--transition-base);
+}
+
+.auth-overlay.is-open {
+  opacity: 1;
+  pointer-events: all;
+}
+
+/* ── Loading spinner (shown while session check is in flight) ── */
+.auth-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.auth-spinner {
+  width: 48px;
+  height: 48px;
+  border: 4px solid rgba(148, 199, 180, 0.25);   /* --color-teal at low opacity */
+  border-top-color: var(--color-teal);
+  border-radius: 50%;
+  animation: auth-spin 0.75s linear infinite;
+}
+
+@keyframes auth-spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ── Auth card ───────────────────────────────────────────────── */
+.auth-card {
+  background-color: var(--color-surface);
+  border-radius: var(--radius-xl);
+  padding: var(--space-10) var(--space-8);
+  width: 100%;
+  max-width: 440px;
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.45);
+  transform: translateY(24px);
+  transition: transform var(--transition-base);
+}
+
+.auth-overlay.is-open .auth-card {
+  transform: translateY(0);
+}
+
+/* ── Card header ─────────────────────────────────────────────── */
+.auth-card__header {
+  text-align: center;
+  margin-bottom: var(--space-8);
+}
+
+.auth-card__lock {
+  font-size: 2.5rem;
+  margin-bottom: var(--space-3);
+  line-height: 1;
+}
+
+.auth-card__brand {
+  font-family: var(--font-serif);
+  font-size: var(--text-2xl);
+  font-weight: 700;
+  color: var(--color-primary);
+}
+
+.auth-card__tagline {
+  margin-top: var(--space-2);
+  font-size: var(--text-sm);
+  color: var(--color-text-subtle);
+}
+
+/* ── Login / Signup tabs ─────────────────────────────────────── */
+.auth-tabs {
+  display: flex;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  margin-bottom: var(--space-6);
+}
+
+.auth-tab {
+  flex: 1;
+  padding: var(--space-3) var(--space-4);
+  background: none;
+  border: none;
+  font-size: var(--text-sm);
+  font-weight: 600;
+  cursor: pointer;
+  color: var(--color-text-subtle);
+  transition: background-color var(--transition-fast),
+              color var(--transition-fast);
+}
+
+.auth-tab:not(.auth-tab--active):hover {
+  background-color: var(--color-surface-tint);
+  color: var(--color-primary);
+}
+
+.auth-tab--active {
+  background-color: var(--color-primary);
+  color: var(--color-text-on-dark);
+}
+
+/* ── Messages ────────────────────────────────────────────────── */
+.auth-message {
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-md);
+  font-size: var(--text-sm);
+  font-weight: 500;
+  margin-bottom: var(--space-4);
+  line-height: 1.5;
+}
+
+.auth-message--error {
+  background-color: var(--color-danger-light);
+  color: var(--color-danger);
+  border: 1px solid var(--color-danger);
+}
+
+.auth-message--success {
+  background-color: var(--color-success-light);
+  color: var(--color-success);
+  border: 1px solid var(--color-success);
+}
+
+/* ── Forms ───────────────────────────────────────────────────── */
+.auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.auth-form .btn--primary {
+  margin-top: var(--space-2);
+  padding: var(--space-4);
+  font-size: var(--text-base);
+}
+
+/* ── Navbar auth section ─────────────────────────────────────── */
+.navbar__auth {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  flex-shrink: 0;
+}
+
+.navbar__user-email {
+  font-size: var(--text-xs);
+  color: var(--color-neutral-light);
+  max-width: 160px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ── Responsive ──────────────────────────────────────────────── */
+@media (max-width: 768px) {
+  .auth-card {
+    padding: var(--space-8) var(--space-6);
+  }
+
+  .navbar__user-email {
+    display: none; /* hide email on small screens, keep logout btn */
+  }
+}

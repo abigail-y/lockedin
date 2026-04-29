@@ -155,4 +155,4 @@ lockedin/
 
 ## What I learned
 
-Using a feature → task → prompt pipeline is the most effective way for me to work with Claude. Being specific and going step-by-step meant I always understood what was being written and why. Laying out the main features I wanted at the start, then tackling them one at a time, made the whole process smoother and produced cleaner output than open-ended prompts.
+Using a feature -> task -> prompt pipeline is the most effective way for me to work with Claude. Being specific and going step-by-step meant I always understood what was being written and why. Laying out the main features I wanted at the start, then tackling them one at a time, made the whole process smoother and produced cleaner output than open-ended prompts.
